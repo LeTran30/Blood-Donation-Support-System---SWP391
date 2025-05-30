@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+
+spring:
+  application:
+    name: blood-donation-support-system
+  datasource:
+    password: 12345
+    username: root
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
