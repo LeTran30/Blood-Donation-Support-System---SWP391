@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     @Column(name = "phone_number")
     private String phoneNumber;
-    // comment
+    // status
     @Column(name = "status")
     private boolean status;
 
