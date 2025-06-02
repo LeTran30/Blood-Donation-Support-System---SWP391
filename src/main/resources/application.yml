@@ -1,18 +1,41 @@
 server:
   port: 8080
 
+open:
+  api:
+    title: API-service document
+    version: V1.0.0
+    description: API for the blood-donation-support system
+    licenseUrl: "https://example.com/license"  # Replace with actual license URL
+    licenseName: API License
+    serversUrl: http://localhost:8080/
+    serversDescription: Server v1
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 
 spring:
   application:
     name: blood-donation-support-system
   datasource:
-    password: 12345
+    url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
     username: root
-
+    password: 12345
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+application:
+  security:
+    jwt:
+      secret-key: "b60c9e7a2e251192f67c2b02773e76c8096a6e38ea49627334eddae82dc7da95"
+      #expiration: 604800000  # 1 day in milliseconds
+      expiration: 36000  # 1 day in milliseconds
+      refresh-token:
+        expiration: 604800000  # 7 days in milliseconds
