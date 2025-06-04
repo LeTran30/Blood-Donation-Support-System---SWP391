@@ -64,7 +64,7 @@ public class UserService implements IUserService {
             User newUser = User.builder()
                     .email(registerRequest.getEmail())
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
-                    .role(Role.BUYER)
+                    .role(Role.MEMBER)
                     .fullName(registerRequest.getFullName())
                     .phoneNumber(registerRequest.getPhoneNumber())
                     .status(true)
