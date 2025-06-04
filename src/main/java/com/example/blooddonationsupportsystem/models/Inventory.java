@@ -1,12 +1,16 @@
 package com.example.blooddonationsupportsystem.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "inventories")
+@Table(name = "inventories",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"bloodTypeId", "componentId"})}
+)
 @Data//toString
 @Getter
 @Setter
@@ -16,12 +20,20 @@ import java.time.LocalDate;
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long inventoryId;
+    private Integer inventoryId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bloodTypeId", nullable = false)
     private BloodType bloodType;
 
-    private String componentType; // Hồng cầu, Huyết tương...
-    private int quantity;
-    private LocalDate lastUpdated;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "componentId", nullable = false)
+    private BloodComponent bloodComponent;
+
+    @Min(0)
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column(nullable = false)
+    private LocalDateTime lastUpdated = LocalDateTime.now();
 }

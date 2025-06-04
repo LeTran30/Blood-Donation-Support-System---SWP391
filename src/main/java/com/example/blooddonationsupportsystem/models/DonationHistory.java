@@ -2,6 +2,7 @@ package com.example.blooddonationsupportsystem.models;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,12 +18,19 @@ import java.time.LocalDate;
 public class DonationHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long historyId;
+    private Integer historyId;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false, unique = true)
     private User user;
 
-    private int totalVolume;
-    private int totalDonations;
+    @Min(0)
+    @Column(nullable = false)
+    private Integer totalVolume = 0;
+
+    @Min(0)
+    @Column(nullable = false)
+    private Integer totalDonations = 0;
+
     private LocalDate lastDonationDate;
 }
