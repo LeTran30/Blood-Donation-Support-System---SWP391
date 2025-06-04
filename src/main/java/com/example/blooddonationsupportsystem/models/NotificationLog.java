@@ -1,33 +1,30 @@
 package com.example.blooddonationsupportsystem.models;
 
-
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
 
 @Entity
-@Table(name = "eligibility_checks")
+@Table(name = "notification_log")
 @Data//toString
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EligibilityCheck extends BaseEntity{
+public class NotificationLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer checkId;
+    private Integer notificationId;
 
     @ManyToOne
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private LocalDate checkDate;
+    private String message;
 
-    @Column(nullable = false)
-    private Boolean isEligible;
-
-    private String reason;
+    @CreationTimestamp
+    private Timestamp sentAt;
 }
