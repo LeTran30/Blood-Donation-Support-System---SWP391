@@ -1,23 +1,23 @@
 package com.example.blooddonationsupportsystem.models;
 
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
+import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "blood_types")
+@Table(name = "blood_component")
 @Data//toString
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BloodType extends BaseEntity{
+public class BloodComponent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer bloodTypeId;
+    private Integer componentId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private BloodTypeName typeName;
+    private BloodComponentName componentName;
 }

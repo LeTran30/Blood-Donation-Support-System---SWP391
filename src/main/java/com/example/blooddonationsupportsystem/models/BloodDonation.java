@@ -1,7 +1,9 @@
 package com.example.blooddonationsupportsystem.models;
 
 
+import com.example.blooddonationsupportsystem.utils.DonationStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,16 +19,28 @@ import java.time.LocalDate;
 public class BloodDonation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long donationId;
+    private Integer donationId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    @Column(nullable = false)
     private LocalDate donationDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bloodTypeId", nullable = false)
     private BloodType bloodType;
 
-    private int volumeML;
-    private String status; // Completed, Rejected
+    @Min(1)
+    @Column(nullable = false)
+    private Integer volumeMl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private DonationStatus status;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "healthCheckId")
+    private HealthCheck healthCheck;
 }

@@ -1,7 +1,11 @@
 package com.example.blooddonationsupportsystem.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "health_check")
@@ -14,14 +18,23 @@ import lombok.*;
 public class HealthCheck {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long healthCheckId;
+    private Integer healthCheckId;
 
-    @OneToOne
-    private BloodDonation donation;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
+    private User user;
 
-    private int pulse;
+    @Min(30)
+    @Max(200)
+    @Column(nullable = false)
+    private Integer pulse;
+
+    @Column(length = 20)
     private String bloodPressure;
-    private float temperature;
-    private float hemoglobinLevel;
-    private String checkResult; // Normal, Warning, Disqualified
+
+    @Column(columnDefinition = "TEXT")
+    private String resultSummary;
+
+    @Column(nullable = false)
+    private LocalDateTime checkedAt = LocalDateTime.now();
 }
