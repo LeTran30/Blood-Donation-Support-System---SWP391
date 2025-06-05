@@ -1,4 +1,4 @@
-package com.example.blooddonationsupportsystem.dtos.responses.BloodComponent;
+package com.example.blooddonationsupportsystem.dtos.responses.bloodComponent;
 
 import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import lombok.*;

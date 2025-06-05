@@ -1,19 +1,22 @@
 package com.example.blooddonationsupportsystem.service.appointment;
 
 import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
+import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.appointment.ListAppointmentResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.service.reminder.ReminderService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -23,16 +26,21 @@ import java.util.Optional;
 public class AppointmentService implements IAppointmentService{
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
+    private final ReminderService reminderService;
     private final ModelMapper modelMapper;
 
     @Override
-    public ResponseEntity<AppointmentResponse> createAppointment(Integer userId, AppointmentRequest appointmentRequest) {
+    public ResponseEntity<?> createAppointment(Integer userId, AppointmentRequest appointmentRequest) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(AppointmentResponse.builder().message("User not found").build());
+            ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("User not found")
+                            .build()
+            );
         }
-    
+
         Appointment appointment = Appointment.builder()
                 .user(user.get())
                 .appointmentDate(appointmentRequest.getAppointmentDate())
@@ -40,94 +48,155 @@ public class AppointmentService implements IAppointmentService{
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
-
-        AppointmentResponse appointmentResponse = modelMapper.map(saved, AppointmentResponse.class);
-        appointmentResponse.setUserId(userId);
-        appointmentResponse.setMessage("Appointment created successfully");
-        return new ResponseEntity<>(appointmentResponse, HttpStatus.CREATED);
+        return  ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.CREATED)
+                        .message("Successfully created appointment")
+                        .data(mapWithUserId(saved))
+                        .build()
+        );
     }
 
     @Override
-    public ResponseEntity<AppointmentResponse> getAppointmentById(Integer appointmentId) {
+    public ResponseEntity<?> getAppointmentById(Integer appointmentId) {
         Optional<Appointment> appointment = appointmentRepository.findById(appointmentId);
-        if (appointment.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(AppointmentResponse.builder().message("Appointment not found").build());
-        }
-        AppointmentResponse appointmentResponse = modelMapper.map(appointment.get(), AppointmentResponse.class);
-        appointmentResponse.setMessage("Appointment retrieved successfully");
-        return new ResponseEntity<>(appointmentResponse, HttpStatus.OK);
+        return appointment.map(value -> ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully retrieved appointment")
+                        .data(mapWithUserId(value))
+                        .build()
+        )).orElseGet(() -> ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.NOT_FOUND)
+                        .message("Appointment not found")
+                        .build()
+        ));
     }
 
     @Override
-    public ResponseEntity<ListAppointmentResponse> getAppointmentsByUserId(Integer userId) {
+    public ResponseEntity<?> getAppointmentsByUserId(Integer userId) {
         if (!userRepository.existsById(userId)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ListAppointmentResponse.builder().message("User not found").build());
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("User not found")
+                            .build()
+            );
         }
 
         List<Appointment> appointments = appointmentRepository.findAllByUserId(userId);
-        List<AppointmentResponse> mapped = appointments.stream()
-                .map(a -> modelMapper.map(a, AppointmentResponse.class))
-                .toList();
 
-        ListAppointmentResponse listAppointmentResponse = new ListAppointmentResponse();
-        listAppointmentResponse.setAppointments(mapped);
-        listAppointmentResponse.setMessage("Appointment retrieved successfully");
-        return new ResponseEntity<>(listAppointmentResponse, HttpStatus.OK);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully retrieved appointments")
+                        .data(appointments.stream()
+                                .map(this::mapWithUserId)
+                                .toList())
+                        .build()
+        );
     }
 
     @Override
-    public ResponseEntity<AppointmentResponse> updateAppointmentStatus(Integer appointmentId, AppointmentStatus status) {
+    public ResponseEntity<?> updateAppointmentStatus(Integer appointmentId, AppointmentStatus status) {
         Optional<Appointment> optionalAppointment = appointmentRepository.findById(appointmentId);
         if (optionalAppointment.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(AppointmentResponse.builder().message("Appointment not found").build());
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Appointment not found")
+                            .build()
+            );
         }
 
         Appointment appointment = optionalAppointment.get();
 
         try {
+            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+                LocalDate completedDate = appointment.getAppointmentDate().toLocalDate();
+                reminderService.createNextDonationReminder(appointment.getUser().getId(), completedDate);
+            }
             appointment.setStatus(status);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(AppointmentResponse.builder().message("Invalid appointment status").build());
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Invalid status value")
+                            .build()
+            );
         }
 
         Appointment saved = appointmentRepository.save(appointment);
-        AppointmentResponse appointmentResponse = modelMapper.map(saved, AppointmentResponse.class);
-        appointmentResponse.setMessage("Appointment updated successfully");
-        return new ResponseEntity<>(appointmentResponse, HttpStatus.OK);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully updated appointment")
+                        .data(mapWithUserId(saved))
+                        .build()
+        );
     }
 
 
     @Override
-    public ResponseEntity<AppointmentResponse> cancelAppointment(Integer appointmentId) {
+    public ResponseEntity<?> cancelAppointment(Integer appointmentId) {
         Optional<Appointment> optionalAppointment = appointmentRepository.findById(appointmentId);
         if (optionalAppointment.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(AppointmentResponse.builder().message("Appointment not found").build());
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Appointment not found")
+                            .build()
+            );
         }
         Appointment appointment = optionalAppointment.get();
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
-
-        AppointmentResponse appointmentResponse = modelMapper.map(appointment, AppointmentResponse.class);
-        appointmentResponse.setMessage("Appointment cancelled successfully");
-        return new ResponseEntity<>(appointmentResponse, HttpStatus.OK);
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully cancelled appointment")
+                        .data(mapWithUserId(appointment))
+                        .build()
+        );
     }
 
     @Override
-    public ResponseEntity<ListAppointmentResponse> getUpcomingAppointments(LocalDateTime fromDateTime) {
-        List<Appointment> appointments = appointmentRepository.findAllByAppointmentDateAfter(fromDateTime);
-        List<AppointmentResponse> mapped = appointments.stream()
-                .map(a -> modelMapper.map(a, AppointmentResponse.class))
-                .toList();
+    public ResponseEntity<?> getAppointmentsWithFilters(LocalDateTime fromDateTime, LocalDateTime toDateTime, AppointmentStatus status, Integer userId) {
+        Specification<Appointment> spec = (root, query, cb) -> cb.conjunction(); // always true
 
-        ListAppointmentResponse listAppointmentResponse = new ListAppointmentResponse();
-        listAppointmentResponse.setAppointments(mapped);
-        listAppointmentResponse.setMessage("Upcoming appointments retrieved successfully");
-        return new ResponseEntity<>(listAppointmentResponse, HttpStatus.OK);
+        if (fromDateTime != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("appointmentDate"), fromDateTime));
+        }
+
+        if (toDateTime != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("appointmentDate"), toDateTime));
+        }
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        if (userId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId));
+        }
+
+        List<Appointment> appointments = appointmentRepository.findAll(spec);
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Appointments retrieved successfully")
+                        .data(appointments.stream()
+                                .map(this::mapWithUserId)
+                                .toList())
+                        .build()
+        );
+    }
+    private AppointmentResponse mapWithUserId(Appointment appointment) {
+        AppointmentResponse response = modelMapper.map(appointment, AppointmentResponse.class);
+        response.setUserId(appointment.getUser().getId());
+        return response;
     }
 
 }

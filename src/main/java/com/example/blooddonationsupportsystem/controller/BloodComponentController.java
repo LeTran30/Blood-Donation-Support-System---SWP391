@@ -1,14 +1,11 @@
 package com.example.blooddonationsupportsystem.controller;
 
-import com.example.blooddonationsupportsystem.dtos.responses.BloodComponent.BloodComponentResponse;
+import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.BloodComponentResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
-import com.example.blooddonationsupportsystem.models.BloodComponent;
-import com.example.blooddonationsupportsystem.service.bloodCompoonent.IBloodComponentService;
-import lombok.NoArgsConstructor;
+import com.example.blooddonationsupportsystem.service.bloodComponent.IBloodComponentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

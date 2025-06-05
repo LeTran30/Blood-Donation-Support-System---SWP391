@@ -1,8 +1,6 @@
 package com.example.blooddonationsupportsystem.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 
@@ -16,11 +14,17 @@ import lombok.*;
 @Builder
 public class BloodRequestInventory {
     @Id
-    private Integer requestId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @Id
-    private Integer inventoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blood_request_id", nullable = false)
+    private BloodRequest bloodRequest;
 
-    @Min(0)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_id", nullable = false)
+    private Inventory inventory;
+
+    @Column(nullable = false)
     private Integer allocatedQuantity;
 }

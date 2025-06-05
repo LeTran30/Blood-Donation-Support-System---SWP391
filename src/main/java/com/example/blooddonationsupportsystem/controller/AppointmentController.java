@@ -1,8 +1,8 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
-import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.appointment.ListAppointmentResponse;
+import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
+import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.appointment.IAppointmentService;
@@ -10,14 +10,17 @@ import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import com.example.blooddonationsupportsystem.utils.Role;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/appointment")
@@ -31,8 +34,21 @@ public class AppointmentController {
     @PreAuthorize("hasAuthority('member:create')")
     public ResponseEntity<?> createAppointment(
             @Valid @RequestBody AppointmentRequest appointmentRequest,
+            BindingResult result,
             Principal principal
     ) {
+        if (result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message(String.valueOf(errorMessages))
+                            .build()
+            );
+        }
         String email = principal.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -42,13 +58,13 @@ public class AppointmentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
-    public ResponseEntity<AppointmentResponse> getAppointmentById(@PathVariable("id") Integer appointmentId) {
+    public ResponseEntity<?> getAppointmentById(@PathVariable("id") Integer appointmentId) {
         return appointmentService.getAppointmentById(appointmentId);
     }
 
     @GetMapping("/user")
     @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
-    public ResponseEntity<ListAppointmentResponse> getAppointmentsByUser(
+    public ResponseEntity<?> getAppointmentsByUser(
             @RequestParam(value = "userId", required = false) Integer userId,
             Principal principal
     ) {
@@ -66,7 +82,7 @@ public class AppointmentController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('staff:update')")
-    public ResponseEntity<AppointmentResponse> updateStatus(
+    public ResponseEntity<?> updateStatus(
             @PathVariable("id") Integer appointmentId,
             @RequestParam AppointmentStatus status) {
         return appointmentService.updateAppointmentStatus(appointmentId, status);
@@ -74,14 +90,19 @@ public class AppointmentController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('member:update')")
-    public ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable("id") Integer appointmentId) {
+    public ResponseEntity<?> cancelAppointment(@PathVariable("id") Integer appointmentId) {
         return appointmentService.cancelAppointment(appointmentId);
     }
 
-    @GetMapping("/upcoming")
-    @PreAuthorize("hasAuthority('member:read')")
-    public ResponseEntity<ListAppointmentResponse> getUpcomingAppointments(
-            @RequestParam @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy") LocalDateTime from) {
-        return appointmentService.getUpcomingAppointments(from);
+    @GetMapping("/filter")
+    @PreAuthorize("hasAuthority('staff:read')")
+    public ResponseEntity<?> getAppointmentsWithFilters(
+            @RequestParam(required = false) LocalDateTime from,
+            @RequestParam(required = false) LocalDateTime to,
+            @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(required = false) Integer userId
+    ) {
+        return appointmentService.getAppointmentsWithFilters(from, to, status, userId);
     }
+    
 }

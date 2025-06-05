@@ -19,10 +19,12 @@ public class Appointment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer appointmentId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     private LocalDateTime appointmentDate;
+
+    @Enumerated(EnumType.STRING)
     private AppointmentStatus status; // Scheduled, Completed, Cancelled
 
 }

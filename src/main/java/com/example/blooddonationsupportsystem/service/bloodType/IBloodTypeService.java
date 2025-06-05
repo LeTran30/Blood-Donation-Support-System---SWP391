@@ -1,4 +1,4 @@
-package com.example.blooddonationsupportsystem.service.BloodType;
+package com.example.blooddonationsupportsystem.service.bloodType;
 
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
 

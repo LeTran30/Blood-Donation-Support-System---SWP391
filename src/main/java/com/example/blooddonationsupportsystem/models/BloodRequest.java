@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.models;
 
+import com.example.blooddonationsupportsystem.utils.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -28,7 +29,9 @@ public class BloodRequest {
     private BloodType bloodType;
 
     private String urgencyLevel;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private RequestStatus status;
 
     @CreationTimestamp
     private Timestamp createdAt;

@@ -14,23 +14,23 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class DonationHistory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer historyId;
+    @Builder
+    public class DonationHistory {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Integer historyId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false, unique = true)
-    private User user;
+        @OneToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "userId", nullable = false, unique = true)
+        private User user;
 
-    @Min(0)
-    @Column(nullable = false)
-    private Integer totalVolume = 0;
+        @Min(0)
+        @Column(nullable = false)
+        private Integer totalVolume = 0;
 
-    @Min(0)
-    @Column(nullable = false)
-    private Integer totalDonations = 0;
+        @Min(0)
+        @Column(nullable = false)
+        private Integer totalDonations = 0;
 
-    private LocalDate lastDonationDate;
-}
+        private LocalDate lastDonationDate;
+    }

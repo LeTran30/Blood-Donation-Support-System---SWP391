@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.dtos.responses.eligibilityCheck;
 
-import com.example.blooddonationsupportsystem.models.User;
 import lombok.*;
 
 import java.time.LocalDate;

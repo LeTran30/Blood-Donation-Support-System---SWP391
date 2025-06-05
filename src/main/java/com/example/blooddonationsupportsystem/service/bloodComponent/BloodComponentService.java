@@ -1,6 +1,6 @@
-package com.example.blooddonationsupportsystem.service.bloodCompoonent;
+package com.example.blooddonationsupportsystem.service.bloodComponent;
 
-import com.example.blooddonationsupportsystem.dtos.responses.BloodComponent.BloodComponentResponse;
+import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.BloodComponentResponse;
 import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
 import lombok.RequiredArgsConstructor;

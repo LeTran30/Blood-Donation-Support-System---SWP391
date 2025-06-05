@@ -2,7 +2,7 @@ package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
-import com.example.blooddonationsupportsystem.service.BloodType.IBloodTypeService;
+import com.example.blooddonationsupportsystem.service.bloodType.IBloodTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

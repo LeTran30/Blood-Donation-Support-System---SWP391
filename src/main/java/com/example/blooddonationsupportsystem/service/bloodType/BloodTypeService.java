@@ -1,10 +1,9 @@
-package com.example.blooddonationsupportsystem.service.BloodType;
+package com.example.blooddonationsupportsystem.service.bloodType;
 
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
-import com.example.blooddonationsupportsystem.models.BloodType;
 
 import java.util.stream.Collectors;
 

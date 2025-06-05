@@ -15,5 +15,4 @@ public class AppointmentResponse {
     private Integer userId;
     private LocalDateTime appointmentDate;
     private AppointmentStatus status; // Scheduled, Completed, Cancelled
-    private String message;
 }
