@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(GET, "/api/v1/user/**").hasRole("ADMIN")
 //                        .requestMatchers(GET, "/api/v1/blood-type/**").permitAll()
                         .requestMatchers(GET, "/api/v1/blood-component/**").permitAll()
-//                        .requestMatchers( "/api/v1/inventory/**").permitAll()
+                        .requestMatchers( "/api/v1/inventory/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

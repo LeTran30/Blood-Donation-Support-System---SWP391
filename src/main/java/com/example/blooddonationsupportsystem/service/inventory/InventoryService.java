@@ -2,7 +2,11 @@ package com.example.blooddonationsupportsystem.service.inventory;
 
 import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.inventory.InventoryResponse;
+import com.example.blooddonationsupportsystem.models.BloodComponent;
+import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.Inventory;
+import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
+import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +19,8 @@ import java.util.List;
 public class InventoryService implements IInventoryService {
 
     private final InventoryRepository inventoryRepository;
+    private final BloodComponentRepository bloodComponentRepository;
+    private final BloodTypeRepository bloodTypeRepository;
 
     @Override
     public List<InventoryResponse> getAllInventory() {
@@ -28,10 +34,21 @@ public class InventoryService implements IInventoryService {
 
     @Override
     public void createInventory(InventoryRequest request) {
+
+        BloodType bloodType = bloodTypeRepository.findById(request.getBloodType())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cannot find blood type with id"));
+
+        BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodType())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cannot find blood components with id"));
+
         Inventory inventory = Inventory.builder()
-                .bloodType(request.getBloodType())
+                .bloodType(bloodType)
                 .quantity(request.getQuantity())
-                .bloodComponent(request.getBloodComponent())
+                .bloodComponent(bloodComponent)
                 .lastUpdated(LocalDateTime.now())
                 .build();
         inventoryRepository.save(inventory);

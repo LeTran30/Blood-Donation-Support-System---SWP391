@@ -22,7 +22,7 @@ public class InventoryController {
     private final IInventoryService inventoryService;
 
     @PostMapping
-    @PreAuthorize("permitAll()")
+//    @PreAuthorize("permitAll()")
     public ResponseEntity<?> addInventory(
             @Valid @RequestBody InventoryRequest inventoryRequest,
             BindingResult result

@@ -14,13 +14,13 @@ import lombok.*;
 @Setter
 public class InventoryRequest {
     @NotNull
-    private BloodType bloodType;
+    private Integer bloodType;
 
     @NotNull
-    private BloodComponent bloodComponent;
+    private Integer bloodComponent;
 
     @NotNull
-    @Min(0)
+    @Min(1)
     private Integer quantity;
 
 }
