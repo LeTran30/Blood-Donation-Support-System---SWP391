@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.service.appointment;
 
+import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.ListAppointmentResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
@@ -25,20 +26,23 @@ public class AppointmentService implements IAppointmentService{
     private final ModelMapper modelMapper;
 
     @Override
-    public ResponseEntity<AppointmentResponse> createAppointment(Integer userId, LocalDateTime appointmentDate) {
+    public ResponseEntity<AppointmentResponse> createAppointment(Integer userId, AppointmentRequest appointmentRequest) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(AppointmentResponse.builder().message("User not found").build());
         }
+    
+        Appointment appointment = Appointment.builder()
+                .user(user.get())
+                .appointmentDate(appointmentRequest.getAppointmentDate())
+                .status(AppointmentStatus.PENDING)
+                .build();
 
-        Appointment appointment = new Appointment();
-        appointment.setUser(user.get());
-        appointment.setAppointmentDate(appointmentDate);
-        appointment.setStatus(AppointmentStatus.PENDING);
         Appointment saved = appointmentRepository.save(appointment);
 
         AppointmentResponse appointmentResponse = modelMapper.map(saved, AppointmentResponse.class);
+        appointmentResponse.setUserId(userId);
         appointmentResponse.setMessage("Appointment created successfully");
         return new ResponseEntity<>(appointmentResponse, HttpStatus.CREATED);
     }

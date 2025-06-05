@@ -1,11 +1,14 @@
 package com.example.blooddonationsupportsystem.controller;
 
+import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.ListAppointmentResponse;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.appointment.IAppointmentService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
+import com.example.blooddonationsupportsystem.utils.Role;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -27,27 +30,38 @@ public class AppointmentController {
     @PostMapping
     @PreAuthorize("hasAuthority('member:create')")
     public ResponseEntity<?> createAppointment(
-            @RequestParam("appointmentDate")
-            @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy") LocalDateTime appointmentDate,
+            @Valid @RequestBody AppointmentRequest appointmentRequest,
             Principal principal
     ) {
         String email = principal.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return appointmentService.createAppointment(user.getId(), appointmentDate);
+        return appointmentService.createAppointment(user.getId(), appointmentRequest);
     }
 
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
     public ResponseEntity<AppointmentResponse> getAppointmentById(@PathVariable("id") Integer appointmentId) {
         return appointmentService.getAppointmentById(appointmentId);
     }
 
-    @GetMapping("/user/")
-    public ResponseEntity<ListAppointmentResponse> getAppointmentsByUserId(Principal principal) {
+    @GetMapping("/user")
+    @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
+    public ResponseEntity<ListAppointmentResponse> getAppointmentsByUser(
+            @RequestParam(value = "userId", required = false) Integer userId,
+            Principal principal
+    ) {
         String email = principal.getName();
-        User user = userRepository.findByEmail(email)
+        User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return appointmentService.getAppointmentsByUserId(user.getId());
+        if (userId == null || currentUser.getRole() == Role.MEMBER) {
+            return appointmentService.getAppointmentsByUserId(currentUser.getId());
+        }
+        if (currentUser.getRole() == Role.STAFF) {
+            return appointmentService.getAppointmentsByUserId(userId);
+        }
+        return ResponseEntity.status(403).build();
     }
 
     @PatchMapping("/{id}/status")

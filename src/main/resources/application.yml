@@ -16,6 +16,9 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+logging:
+  level:
+    org.springdoc: DEBUG
 
 spring:
   application:

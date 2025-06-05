@@ -23,20 +23,22 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final LogoutHandler logoutHandler;
 
-    private static final String[] WHILE_LIST = {
+    private static final String[] WHITE_LIST = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
             "/api/v1/auth/**",
-            "/api/v1/user/**"
-    };
+            "/api/v1/user/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+ };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(WHILE_LIST).permitAll()
+                        .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers(GET, "/api/v1/user/**").hasRole("ADMIN")
 //                        .requestMatchers(GET, "/api/v1/blood-type/**").permitAll()
                         .requestMatchers(GET, "/api/v1/blood-component/**").permitAll()

@@ -1,16 +1,16 @@
 package com.example.blooddonationsupportsystem.service.appointment;
 
+import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.ListAppointmentResponse;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface IAppointmentService {
 
-    ResponseEntity<AppointmentResponse> createAppointment(Integer userId, LocalDateTime appointmentDate);
+    ResponseEntity<AppointmentResponse> createAppointment(Integer userId, AppointmentRequest appointmentRequest);
 
     ResponseEntity<AppointmentResponse> getAppointmentById(Integer appointmentId);
 
