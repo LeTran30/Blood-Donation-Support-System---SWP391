@@ -1,28 +1,19 @@
-package com.example.blooddonationsupportsystem.models;
+package com.example.blooddonationsupportsystem.dtos.responses.appointment;
 
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "appointments")
-@Data//toString
-@Getter
-@Setter
+@Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class Appointment extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Setter
+public class AppointmentResponse {
     private Integer appointmentId;
-
-    @ManyToOne
-    private User user;
-
+    private Integer userId;
     private LocalDateTime appointmentDate;
     private AppointmentStatus status; // Scheduled, Completed, Cancelled
-
+    private String message;
 }
