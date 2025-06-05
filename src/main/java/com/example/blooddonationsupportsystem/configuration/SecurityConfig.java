@@ -3,7 +3,6 @@ package com.example.blooddonationsupportsystem.configuration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,6 +38,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHILE_LIST).permitAll()
                         .requestMatchers(GET, "/api/v1/user/**").hasRole("ADMIN")
+//                        .requestMatchers(GET, "/api/v1/blood-type/**").permitAll()
+                        .requestMatchers(GET, "/api/v1/blood-component/**").permitAll()
+//                        .requestMatchers( "/api/v1/inventory/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,0 +1,41 @@
+package com.example.blooddonationsupportsystem.controller;
+
+import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
+import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
+import com.example.blooddonationsupportsystem.service.BloodType.IBloodTypeService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/blood-type")
+@RequiredArgsConstructor
+@CrossOrigin("*")
+public class BloodTypeController {
+    private final IBloodTypeService bloodTypeService;
+
+    /**
+     * Retrieves the list of all available blood types from the system.
+     *
+     * @return ResponseEntity containing a ResponseObject with a message,
+     *         HTTP status, and a list of BloodTypeResponse objects representing
+     *         the available blood types.
+     */
+    @GetMapping
+    @PreAuthorize("permitAll()")
+    ResponseEntity<ResponseObject> getBloodType() {
+        List<BloodTypeResponse> bloodTypes = bloodTypeService.getAllBloodTypes();
+        return ResponseEntity.ok(ResponseObject.builder()
+                .message("Get list of blood Components successfully")
+                .status(HttpStatus.OK)
+                .data(bloodTypes)
+                .build());
+    }
+}

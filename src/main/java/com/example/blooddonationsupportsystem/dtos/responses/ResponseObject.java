@@ -9,8 +9,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResponseObject<T> {
-
+public class ResponseObject {
     @JsonProperty("message")
     private String message;
 
@@ -18,5 +17,5 @@ public class ResponseObject<T> {
     private HttpStatus status;
 
     @JsonProperty("data")
-    private T data;
+    private Object data;
 }
