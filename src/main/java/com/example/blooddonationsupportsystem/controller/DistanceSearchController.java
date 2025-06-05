@@ -5,17 +5,20 @@ import com.example.blooddonationsupportsystem.service.distanceSearch.IDistanceSe
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin("*")
+@RequestMapping("/api/v1/distance-search")
 public class DistanceSearchController {
 
     private final IDistanceSearchService distanceSearchService;
 
     @Operation(summary = "Search for nearby blood donors", description = "Finds blood donors near the user's location with matching blood type and component.")
     @PostMapping("/api/distance-search")
+    @PreAuthorize("true")
     public ResponseEntity<?> searchNearbyDonors(@RequestBody DistanceSearchRequest request) {
         return distanceSearchService.searchNearby(request);
     }

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/blood-request-inventories")
+@RequestMapping("/api/v1/blood-request-inventories")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class BloodRequestInventoryController {
     private final IBloodRequestInventoryService inventoryService;
 
     @PostMapping
+    @PreAuthorize("true")
     public ResponseEntity<?> assignInventory(
             @Valid @RequestBody BloodRequestInventoryRequest request,
             BindingResult result

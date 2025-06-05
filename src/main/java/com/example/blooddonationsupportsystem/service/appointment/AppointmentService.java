@@ -7,7 +7,7 @@ import com.example.blooddonationsupportsystem.models.Appointment;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
-import com.example.blooddonationsupportsystem.service.reminder.ReminderService;
+import com.example.blooddonationsupportsystem.service.reminder.IReminderService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -26,14 +26,14 @@ import java.util.Optional;
 public class AppointmentService implements IAppointmentService{
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
-    private final ReminderService reminderService;
+    private final IReminderService reminderService;
     private final ModelMapper modelMapper;
 
     @Override
     public ResponseEntity<?> createAppointment(Integer userId, AppointmentRequest appointmentRequest) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) {
-            ResponseEntity.ok(
+            return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
                             .message("User not found")

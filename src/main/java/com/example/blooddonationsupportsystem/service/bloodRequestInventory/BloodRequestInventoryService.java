@@ -60,7 +60,7 @@ public class BloodRequestInventoryService implements IBloodRequestInventoryServi
         BloodRequestInventory allocation = BloodRequestInventory.builder()
                 .bloodRequest(bloodRequest)
                 .inventory(bloodInventory)
-                .quantityAllocated(request.getQuantity())
+                .allocatedQuantity(request.getQuantity())
                 .build();
         bloodRequestInventoryRepository.save(allocation);
 

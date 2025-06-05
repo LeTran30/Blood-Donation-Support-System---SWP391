@@ -90,7 +90,7 @@ public class BloodRequestService implements IBloodRequestService {
                 .inventoryId(allocation.getInventory().getInventoryId())
                 .bloodType(allocation.getInventory().getBloodType().getBloodTypeId())
                 .bloodComponent(allocation.getInventory().getBloodComponent().getComponentId())
-                .quantityAllocated(allocation.getQuantityAllocated())
+                .quantityAllocated(allocation.getAllocatedQuantity())
                 .build();
     }
 }
