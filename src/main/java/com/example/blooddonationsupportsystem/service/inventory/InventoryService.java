@@ -24,12 +24,28 @@ public class InventoryService implements IInventoryService {
 
     @Override
     public List<InventoryResponse> getAllInventory() {
-        return List.of();
+        List<Inventory> inventoryList = inventoryRepository.findAll();
+        return inventoryList
+                .stream()
+                .map(inventory -> InventoryResponse.builder()
+                        .id(inventory.getInventoryId())
+                        .bloodType(inventory.getBloodType().getBloodTypeId())
+                        .quantity(inventory.getQuantity())
+                        .lastUpdated(inventory.getLastUpdated())
+                        .build())
+                .toList();
     }
 
     @Override
     public InventoryResponse getInventoryById(Integer id) {
-        return null;
+        Inventory inventory = inventoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
+        return InventoryResponse.builder()
+                .id(inventory.getInventoryId())
+                .bloodType(inventory.getBloodType().getBloodTypeId())
+                .quantity(inventory.getQuantity())
+                .lastUpdated(inventory.getLastUpdated())
+                .build();
     }
 
     @Override
@@ -56,6 +72,23 @@ public class InventoryService implements IInventoryService {
 
     @Override
     public void updateInventory(Integer id, InventoryRequest request) {
+        Inventory inventory = inventoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
 
+        BloodType bloodType = bloodTypeRepository.findById(request.getBloodType())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cannot find blood type with id: " + request.getBloodType()));
+
+        BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponent())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cannot find blood component with id: " + request.getBloodComponent()));
+
+        inventory.setBloodType(bloodType);
+        inventory.setBloodComponent(bloodComponent);
+        inventory.setQuantity(request.getQuantity());
+        inventory.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inventory);
     }
 }

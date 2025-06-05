@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class InventoryResponse {
-    private Long id;
-    private BloodType bloodType;
+    private Integer id;
+    private Integer bloodType;
     private Integer quantity;
     private LocalDateTime lastUpdated;
 }
