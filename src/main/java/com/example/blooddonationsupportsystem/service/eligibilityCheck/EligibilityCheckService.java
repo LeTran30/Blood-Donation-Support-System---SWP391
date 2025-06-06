@@ -25,6 +25,7 @@ public class EligibilityCheckService implements IEligibilityCheckService {
                 .checkDate(eligibilityCheckRequest.getCheckDate())
                 .reason(eligibilityCheckRequest.getReason())
                 .build();
+        eligibilityCheckRepository.save(eligibilityCheck);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class EligibilityCheckService implements IEligibilityCheckService {
                 .isEligible(eligibilityCheck.getIsEligible())
                 .checkDate(eligibilityCheck.getCheckDate())
                 .reason(eligibilityCheck.getReason())
+                .user(eligibilityCheck.getUser().getId())
                 .build();
     }
 }
