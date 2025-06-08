@@ -18,11 +18,15 @@ import java.time.LocalDateTime;
 public class HealthCheck {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer healthCheckId;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id", nullable = false)
+    private Appointment appointment;
 
     @Min(30)
     @Max(200)
@@ -36,5 +40,15 @@ public class HealthCheck {
     private String resultSummary;
 
     @Column(nullable = false)
-    private LocalDateTime checkedAt = LocalDateTime.now();
+    private Boolean isEligible;
+
+    private String ineligibleReason;
+
+    @Column(nullable = false)
+    private LocalDateTime checkedAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.checkedAt = LocalDateTime.now();
+    }
 }

@@ -1,8 +1,8 @@
 package com.example.blooddonationsupportsystem.utils;
 
 public enum BloodTypeName {
-    WHOLE_BLOOD,
-    PLASMA,
-    PLATELETS,
-    RED_BLOOD_CELLS
+    A_POS, A_NEG,
+    B_POS, B_NEG,
+    AB_POS, AB_NEG,
+    O_POS, O_NEG
 }

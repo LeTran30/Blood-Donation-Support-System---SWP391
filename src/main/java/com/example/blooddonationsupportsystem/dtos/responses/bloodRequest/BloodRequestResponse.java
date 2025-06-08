@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +14,5 @@ public class BloodRequestResponse {
     private String bloodType;
     private String urgencyLevel;
     private String status;
-    private Instant createdAt;
+    private String createdAt;
 }

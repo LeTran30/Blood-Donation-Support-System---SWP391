@@ -6,15 +6,13 @@ import java.sql.Timestamp;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
 public class DistanceSearchResponse {
     private Integer searchId;
     private Integer userId;
     private Integer targetUserId;
+    private String targetUsername;
     private Integer bloodTypeId;
+    private String bloodTypeName;
     private Double distanceKM;
     private Timestamp searchTime;
 }

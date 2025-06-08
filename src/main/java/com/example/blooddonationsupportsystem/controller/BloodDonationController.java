@@ -3,9 +3,13 @@ package com.example.blooddonationsupportsystem.controller;
 import com.example.blooddonationsupportsystem.dtos.request.bloodDonation.BloodDonationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.BloodDonationResponse;
+import com.example.blooddonationsupportsystem.models.BloodDonation;
 import com.example.blooddonationsupportsystem.service.bloodDonation.IBloodDonationService;
+import com.example.blooddonationsupportsystem.service.inventory.IInventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/blood-donation")
@@ -20,6 +25,7 @@ import java.util.List;
 @CrossOrigin("*")
 public class BloodDonationController {
     private final IBloodDonationService bloodDonationService;
+    private final IInventoryService inventoryService;
 
     @GetMapping()
     public ResponseEntity<?> getBloodDonation() {
@@ -60,16 +66,34 @@ public class BloodDonationController {
             return ResponseEntity.badRequest().body(
                     ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message(String.valueOf(errorMessages))
+                            .message(String.join(", ", errorMessages))
                             .build()
             );
         }
-        bloodDonationService.addBloodDonation(bloodDonationRequest);
-        return ResponseEntity.ok(
-                ResponseObject.builder()
-                        .status(HttpStatus.OK)
-                        .message("Successfully created blood donation")
-                        .build()
-        );
+
+        try {
+            BloodDonation bloodDonation = bloodDonationService.addBloodDonation(bloodDonationRequest);
+            inventoryService.updateInventoryAfterDonation(bloodDonation);
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("Successfully created blood donation")
+                            .build()
+            );
+        }catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.CONFLICT)
+                            .message("Duplicate blood donation entry detected: " + Objects.requireNonNull(e.getRootCause()).getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Error: " + e.getMessage())
+                            .build()
+            );
+        }
     }
 }

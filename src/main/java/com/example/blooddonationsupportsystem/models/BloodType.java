@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.persistence.*;
 import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "blood_types")
 @Data//toString

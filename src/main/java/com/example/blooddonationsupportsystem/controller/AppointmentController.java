@@ -1,11 +1,12 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
-import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
+import com.example.blooddonationsupportsystem.dtos.request.healthCheck.HealthCheckRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.appointment.IAppointmentService;
+import com.example.blooddonationsupportsystem.service.healthCheck.HealthCheckService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import com.example.blooddonationsupportsystem.utils.Role;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ import java.util.List;
 public class AppointmentController {
     private final IAppointmentService appointmentService;
     private final UserRepository userRepository;
+    private final HealthCheckService healthCheckService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('member:create')")
@@ -71,25 +73,47 @@ public class AppointmentController {
         String email = principal.getName();
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         if (userId == null || currentUser.getRole() == Role.MEMBER) {
             return appointmentService.getAppointmentsByUserId(currentUser.getId());
         }
+
         if (currentUser.getRole() == Role.STAFF) {
+            boolean exists = userRepository.existsById(userId);
+            if (!exists) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.NOT_FOUND)
+                                .message("User with id " + userId + " not found")
+                                .build());
+            }
             return appointmentService.getAppointmentsByUserId(userId);
         }
-        return ResponseEntity.status(403).build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('staff:update')")
     public ResponseEntity<?> updateStatus(
             @PathVariable("id") Integer appointmentId,
-            @RequestParam AppointmentStatus status) {
-        return appointmentService.updateAppointmentStatus(appointmentId, status);
+            @RequestParam String status) {
+        AppointmentStatus appointmentStatus;
+        try {
+            appointmentStatus = AppointmentStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Invalid AppointmentStatus value: " + status)
+                            .build());
+        }
+        return appointmentService.updateAppointmentStatus(appointmentId, appointmentStatus);
     }
 
+
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('member:update')")
+    @PreAuthorize("hasAuthority('member:delete')")
     public ResponseEntity<?> cancelAppointment(@PathVariable("id") Integer appointmentId) {
         return appointmentService.cancelAppointment(appointmentId);
     }
@@ -104,5 +128,22 @@ public class AppointmentController {
     ) {
         return appointmentService.getAppointmentsWithFilters(from, to, status, userId);
     }
-    
+
+
+    @PreAuthorize("hasAuthority('staff:create')")
+    @PostMapping("/appointment/{appointmentId}/health-check")
+    public ResponseEntity<?> createHealthCheck(
+            @PathVariable Integer appointmentId,
+            @Valid @RequestBody HealthCheckRequest request
+    ) {
+        return healthCheckService.createHealthCheck(appointmentId, request);
+    }
+
+    @PreAuthorize("hasAnyAuthority('staff:read', 'member:read')")
+    @GetMapping("/appointment/{appointmentId}/health-check")
+    public ResponseEntity<?> getHealthCheckByAppointment(@PathVariable Integer appointmentId) {
+        return healthCheckService.getByAppointmentId(appointmentId);
+    }
+
+
 }

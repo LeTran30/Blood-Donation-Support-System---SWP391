@@ -3,13 +3,13 @@ package com.example.blooddonationsupportsystem.service.reminder;
 import com.example.blooddonationsupportsystem.dtos.request.reminder.ReminderRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.reminder.ReminderResponse;
-import com.example.blooddonationsupportsystem.models.Appointment;
 import com.example.blooddonationsupportsystem.models.NotificationLog;
 import com.example.blooddonationsupportsystem.models.Reminder;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.NotificationLogRepository;
 import com.example.blooddonationsupportsystem.repositories.ReminderRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.utils.ReminderType;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.jpa.domain.Specification;
@@ -76,7 +76,7 @@ public class ReminderService implements IReminderService {
         ReminderRequest request = ReminderRequest.builder()
                 .userId(userId)
                 .nextDate(nextDate)
-                .reminderType("NEXT_DONATION")
+                .reminderType(ReminderType.BLOOD_DONATION)
                 .message("You're eligible to donate blood again on " + nextDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                 .sent(false)
                 .build();
@@ -190,20 +190,32 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
-    public ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate) {
+    public ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate,ReminderType reminderType) {
         Specification<Reminder> spec = (root, query, cb) -> cb.conjunction();
 
         if (userId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("user").get("id"), userId));
         }
+
         if (sent != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("sent"), sent));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("sent"), sent));
         }
+
         if (fromDate != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("nextDate"), fromDate));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.greaterThanOrEqualTo(root.get("nextDate"), fromDate));
         }
+
         if (toDate != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("nextDate"), toDate));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.lessThanOrEqualTo(root.get("nextDate"), toDate));
+        }
+
+        if (reminderType != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("reminderType"), reminderType));
         }
 
         List<Reminder> reminders = reminderRepository.findAll(spec);
@@ -219,4 +231,5 @@ public class ReminderService implements IReminderService {
                         .build()
         );
     }
+
 }

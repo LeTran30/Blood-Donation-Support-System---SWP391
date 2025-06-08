@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.request.reminder;
 
+import com.example.blooddonationsupportsystem.utils.ReminderType;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +26,7 @@ public class ReminderRequest {
 
     @NotBlank(message = "Reminder type is required")
     @Size(max = 100, message = "Reminder type must be less than or equal to 100 characters")
-    private String reminderType;
+    private ReminderType reminderType;
 
     @NotBlank(message = "Message is required")
     @Size(max = 255, message = "Message must be less than or equal to 255 characters")

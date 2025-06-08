@@ -2,17 +2,9 @@ package com.example.blooddonationsupportsystem.service.bloodDonation;
 
 import com.example.blooddonationsupportsystem.dtos.request.bloodDonation.BloodDonationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.BloodDonationResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.user.UserResponse;
-import com.example.blooddonationsupportsystem.models.BloodDonation;
-import com.example.blooddonationsupportsystem.models.BloodType;
-import com.example.blooddonationsupportsystem.models.HealthCheck;
-import com.example.blooddonationsupportsystem.models.User;
-import com.example.blooddonationsupportsystem.repositories.BloodDonationRepository;
-import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
-import com.example.blooddonationsupportsystem.repositories.HealthCheckRepository;
-import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.models.*;
+import com.example.blooddonationsupportsystem.repositories.*;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +17,8 @@ public class BloodDonationService implements IBloodDonationService {
     private final BloodTypeRepository bloodTypeRepository;
     private final HealthCheckRepository healthCheckRepository;
     private final UserRepository userRepository;
-//    private final BloodDonationRequest request;
+    private final InventoryRepository inventoryRepository;
+    private final BloodComponentRepository bloodComponentRepository;
 
     @Override
     public BloodDonationResponse getBloodDonationById(int id) {
@@ -38,7 +31,7 @@ public class BloodDonationService implements IBloodDonationService {
                 .donationDate(donation.getDonationDate())
                 .volumeMl(donation.getVolumeMl())
                 .status(donation.getStatus())
-                .healthCheck(donation.getHealthCheck().getHealthCheckId())
+                .healthCheck(donation.getHealthCheck().getId())
                 .build();
 
 
@@ -54,18 +47,21 @@ public class BloodDonationService implements IBloodDonationService {
                         .donationDate(donation.getDonationDate())
                         .volumeMl(donation.getVolumeMl())
                         .status(donation.getStatus())
-                        .healthCheck(donation.getHealthCheck().getHealthCheckId())
+                        .healthCheck(donation.getHealthCheck().getId())
                         .build())
                 .toList();
     }
 
     @Override
-    public void addBloodDonation(BloodDonationRequest bloodDonationRequest) {
+    public BloodDonation addBloodDonation(BloodDonationRequest bloodDonationRequest) {
         User user = userRepository.findById(bloodDonationRequest.getUser())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         BloodType bloodType = bloodTypeRepository.findById(bloodDonationRequest.getBloodType())
                 .orElseThrow(() -> new IllegalArgumentException("Blood type not found"));
+
+        BloodComponent bloodComponent = bloodComponentRepository.findById(bloodDonationRequest.getBloodComponent())
+                .orElseThrow(() -> new IllegalArgumentException("Blood component not found"));
 
         HealthCheck healthCheck = healthCheckRepository.findById(bloodDonationRequest.getHealthCheck())
                 .orElseThrow(() -> new IllegalArgumentException("Health check not found"));
@@ -73,11 +69,13 @@ public class BloodDonationService implements IBloodDonationService {
         BloodDonation bloodDonation = BloodDonation.builder()
                 .user(user)
                 .bloodType(bloodType)
+                .bloodComponent(bloodComponent)
                 .donationDate(bloodDonationRequest.getDonationDate())
                 .volumeMl(bloodDonationRequest.getVolumeMl())
                 .status(bloodDonationRequest.getStatus())
                 .healthCheck(healthCheck)
                 .build();
-        bloodDonationRepository.save(bloodDonation);
+        return bloodDonationRepository.save(bloodDonation);
+
     }
 }

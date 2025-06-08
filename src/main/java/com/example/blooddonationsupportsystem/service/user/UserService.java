@@ -2,11 +2,10 @@ package com.example.blooddonationsupportsystem.service.user;
 
 import com.example.blooddonationsupportsystem.dtos.request.user.Authentication;
 import com.example.blooddonationsupportsystem.dtos.request.user.RegisterRequest;
+import com.example.blooddonationsupportsystem.dtos.request.user.UpdateUserRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
-import com.example.blooddonationsupportsystem.dtos.responses.user.AuthenticationResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.user.ListUserResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.user.RegisterResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.user.UserResponse;
+import com.example.blooddonationsupportsystem.dtos.responses.user.*;
+import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.Token;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.TokenRepository;
@@ -283,6 +282,168 @@ public class UserService implements IUserService {
                 .build());
     }
 
+    @Override
+    public ResponseEntity<?> getCurrentUserInfo() {
+        try {
+            // Lấy token từ header Authorization
+            String authHeader = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+                    .getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("Missing or invalid Authorization header")
+                                .build());
+            }
+
+            // Trích xuất token
+            String token = authHeader.substring(7);
+            String userEmail = jwtService.extractUserEmail(token);
+
+            // Tìm user
+            User user = userRepository.findUserByEmail(userEmail).orElse(null);
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .message("User not found")
+                                .build());
+            }
+
+            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
+
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Success")
+                    .data(response)
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Internal server error")
+                            .build());
+        }
+    }
+
+
+    @Override
+    public ResponseEntity<?> getUserById(Integer id) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(id);
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.NOT_FOUND)
+                                .message("User not found")
+                                .build());
+            }
+
+            UserResponse userResponse = modelMapper.map(optionalUser.get(), UserResponse.class);
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Success")
+                    .data(userResponse)
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Error: " + e.getMessage())
+                            .build());
+        }
+    }
+
+
+    @Override
+    public ResponseEntity<?> updateUser(Integer id, UpdateUserRequest request) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(id);
+            if (optionalUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.NOT_FOUND)
+                                .message("User not found")
+                                .build());
+            }
+
+            User user = optionalUser.get();
+
+            if (request.getFullName() != null) {
+                user.setFullName(request.getFullName());
+            }
+            if (request.getPhoneNumber() != null) {
+                user.setPhoneNumber(request.getPhoneNumber());
+            }
+            if (request.getAddress() != null) {
+                user.setAddress(request.getAddress());
+            }
+            if (request.getGender() != null) {
+                user.setGender(request.getGender());
+            }
+            if (request.getDateOfBirth() != null) {
+                user.setDateOfBirth(request.getDateOfBirth());
+            }
+            if (request.getLatitude() != null) {
+                user.setLatitude(request.getLatitude());
+            }
+            if (request.getLongitude() != null) {
+                user.setLongitude(request.getLongitude());
+            }
+            if (request.getAddress() != null) {
+                user.setAddress(request.getAddress());
+            }
+
+            userRepository.save(user);
+
+            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
+
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("User updated successfully")
+                    .data(response)
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Error: " + e.getMessage())
+                            .build());
+        }
+    }
+
+
+    @Override
+    public ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm) {
+        try {
+            List<User> nearbyUsers = userRepository.findUsersNearby(lat, lon, radiusKm);
+            List<UserResponse> userResponses = nearbyUsers.stream()
+                    .map(user -> modelMapper.map(user, UserResponse.class))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Nearby donors found")
+                    .data(userResponses)
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Error: " + e.getMessage())
+                            .build());
+        }
+    }
 
 
     private void saveToken(User user, String jwtToken, String refreshToken) {

@@ -32,6 +32,10 @@ public class BloodDonation {
     @JoinColumn(name = "bloodTypeId", nullable = false)
     private BloodType bloodType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bloodComponentId", nullable = false)
+    private BloodComponent bloodComponent;
+
     @Min(1)
     @Column(nullable = false)
     private Integer volumeMl;

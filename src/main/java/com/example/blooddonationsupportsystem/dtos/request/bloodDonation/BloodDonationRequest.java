@@ -28,6 +28,9 @@ public class BloodDonationRequest {
     @NotNull(message = "Blood type is required.")
     private Integer bloodType;
 
+    @NotNull(message = "Blood component is required.")
+    private Integer bloodComponent;
+
     @NotNull(message = "Volume in ml is required.")
     @Min(value = 50, message = "Minimum donation volume is 50ml.")
     private Integer volumeMl;
