@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "blood_donation")
+@Table(name = "blood_donations")
 @Data//toString
 @Getter
 @Setter
@@ -22,18 +22,18 @@ public class BloodDonation {
     private Integer donationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
     private LocalDate donationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bloodTypeId", nullable = false)
+    @JoinColumn(name = "blood_type_id", nullable = false)
     private BloodType bloodType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bloodComponentId", nullable = false)
+    @JoinColumn(name = "blood_component_id", nullable = false)
     private BloodComponent bloodComponent;
 
     @Min(1)
@@ -45,6 +45,6 @@ public class BloodDonation {
     private DonationStatus status;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "healthCheckId")
+    @JoinColumn(name = "health_check_id")
     private HealthCheck healthCheck;
 }

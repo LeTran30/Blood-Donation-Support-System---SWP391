@@ -23,11 +23,11 @@ public class Inventory {
     private Integer inventoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bloodTypeId", nullable = false)
+    @JoinColumn(name = "blood_type_id", nullable = false)
     private BloodType bloodType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "componentId", nullable = false)
+    @JoinColumn(name = "component_id", nullable = false)
     private BloodComponent bloodComponent;
 
     @Min(0)

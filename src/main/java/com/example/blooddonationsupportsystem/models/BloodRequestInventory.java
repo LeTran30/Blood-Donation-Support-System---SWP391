@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 
 @Entity
-@Table(name = "blood_request_inventory")
+@Table(name = "blood_request_inventories")
 @Data
 @Getter
 @Setter

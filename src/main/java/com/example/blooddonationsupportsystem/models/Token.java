@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "token")
+@Table(name = "tokens")
 @Builder
 public class Token extends BaseEntity{
     @Id
@@ -29,9 +29,9 @@ public class Token extends BaseEntity{
     @Column(name = "refresh_token")
     private String refreshToken;
 
-    @ManyToOne
-    @JsonBackReference
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference(value = "user-token")
     private User user;
 
     @Enumerated(EnumType.STRING)

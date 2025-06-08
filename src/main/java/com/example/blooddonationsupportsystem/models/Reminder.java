@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.models;
 
 import com.example.blooddonationsupportsystem.utils.ReminderType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +20,9 @@ public class Reminder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer reminderId;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference(value = "user-reminder")
     private User user;
 
     @Column(nullable = false)

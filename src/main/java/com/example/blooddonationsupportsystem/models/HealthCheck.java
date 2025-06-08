@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,7 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "health_check")
+@Table(name = "health_checks")
 @Data//toString
 @Getter
 @Setter
@@ -22,6 +23,7 @@ public class HealthCheck {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference(value = "user-health")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "notification_log")
+@Table(name = "notification_logs")
 @Data//toString
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class NotificationLog {
     private Integer notificationId;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     private String message;

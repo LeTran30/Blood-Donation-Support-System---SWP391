@@ -21,11 +21,11 @@ public class BloodRequest {
     private Integer requestId;
 
     @ManyToOne
-    @JoinColumn(name = "componentId", nullable = false)
+    @JoinColumn(name = "component_id", nullable = false)
     private BloodComponent component;
 
     @ManyToOne
-    @JoinColumn(name = "bloodTypeId", nullable = false)
+    @JoinColumn(name = "blood_type_id", nullable = false)
     private BloodType bloodType;
 
     private String urgencyLevel;

@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "blood_component")
+@Table(name = "blood_components")
 @Data//toString
 @Getter
 @Setter

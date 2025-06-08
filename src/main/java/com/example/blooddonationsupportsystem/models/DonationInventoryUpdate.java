@@ -7,7 +7,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 @Entity
-@Table(name = "donation_inventory_update")
+@Table(name = "donation_inventory_updates")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,12 +19,12 @@ public class DonationInventoryUpdate {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("bloodDonation")
-    @JoinColumn(name = "donationId", nullable = false)
+    @JoinColumn(name = "donation_id", nullable = false)
     private BloodDonation bloodDonation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("inventory")
-    @JoinColumn(name = "inventoryId", nullable = false)
+    @JoinColumn(name = "inventory_id", nullable = false)
     private Inventory inventory;
 
     @Min(0)
