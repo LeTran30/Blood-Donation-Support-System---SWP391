@@ -1,13 +1,14 @@
 package com.example.blooddonationsupportsystem.service.bloodRequest;
 
-import com.example.blooddonationsupportsystem.dtos.request.bloodrequest.BloodRequestRequest;
+import com.example.blooddonationsupportsystem.dtos.request.bloodrequest.BloodRequestAllocationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodRequest.BloodRequestResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.inventoryAllocation.InventoryAllocationResponse;
-import com.example.blooddonationsupportsystem.models.BloodRequest;
-import com.example.blooddonationsupportsystem.models.BloodRequestInventory;
-import com.example.blooddonationsupportsystem.repositories.BloodRequestInventoryRepository;
-import com.example.blooddonationsupportsystem.repositories.BloodRequestRepository;
+import com.example.blooddonationsupportsystem.models.*;
+import com.example.blooddonationsupportsystem.repositories.*;
+import com.example.blooddonationsupportsystem.utils.BloodRequestInventoryKey;
+import com.example.blooddonationsupportsystem.utils.RequestStatus;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -16,26 +17,40 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class BloodRequestService implements IBloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final BloodRequestInventoryRepository bloodRequestInventoryRepository;
+    private final InventoryRepository inventoryRepository;
+    private final BloodComponentRepository bloodComponentRepository;
+    private final BloodTypeRepository bloodTypeRepository;
     private final ModelMapper modelMapper;
 
     @Override
-    public ResponseEntity<?> createRequest(BloodRequestRequest request) {
+    public ResponseEntity<?> createRequest(BloodRequestAllocationRequest request) {
         BloodRequest bloodRequest = modelMapper.map(request, BloodRequest.class);
 
         if (bloodRequest.getCreatedAt() == null) {
             bloodRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         }
+        BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
+                .orElseThrow(() -> new RuntimeException("Blood type not found"));
+        BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
+                .orElseThrow(() -> new RuntimeException("Blood component not found"));
 
+        bloodRequest.setBloodType(bloodType);
+        bloodRequest.setComponent(bloodComponent);
+        bloodRequest.setStatus(RequestStatus.PENDING);
+        bloodRequest.setUrgencyLevel(request.getUrgencyLevel());
         bloodRequest = bloodRequestRepository.save(bloodRequest);
 
         BloodRequestResponse response = modelMapper.map(bloodRequest, BloodRequestResponse.class);
-
+        if (bloodRequest.getCreatedAt() != null) {
+            response.setCreatedAt(bloodRequest.getCreatedAt().toLocalDateTime().toString());
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseObject.builder()
                         .status(HttpStatus.CREATED)
@@ -84,13 +99,88 @@ public class BloodRequestService implements IBloodRequestService {
         );
 
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<?> allocateInventory(Integer requestId) {
+        Optional<BloodRequest> optionalRequest = bloodRequestRepository.findById(Long.valueOf(requestId));
+        if (optionalRequest.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Blood request not found")
+                            .build());
+        }
+
+        BloodRequest bloodRequest = optionalRequest.get();
+
+        Optional<Inventory> optionalInventory = inventoryRepository.findByBloodTypeAndBloodComponent(
+                bloodRequest.getBloodType(), bloodRequest.getComponent());
+
+        if (optionalInventory.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("No inventory available for this blood request")
+                            .build());
+        }
+
+        Inventory inventory = optionalInventory.get();
+        Integer quantityToAllocate = inventory.getQuantity();
+
+        if (quantityToAllocate <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Insufficient inventory quantity")
+                            .build());
+        }
+
+        inventory.setQuantity(0); // allocate toàn bộ
+        inventoryRepository.save(inventory);
+
+        Optional<BloodRequestInventory> optionalBRInventory = bloodRequestInventoryRepository.findByBloodRequestAndInventory(bloodRequest, inventory);
+
+        BloodRequestInventory brInventory = optionalBRInventory.orElseGet(() -> {
+            BloodRequestInventory newBRInventory = new BloodRequestInventory();
+            BloodRequestInventoryKey key = new BloodRequestInventoryKey(
+                    bloodRequest.getRequestId(),
+                    inventory.getInventoryId()
+            );
+            newBRInventory.setId(key);
+            newBRInventory.setBloodRequest(bloodRequest);
+            newBRInventory.setInventory(inventory);
+            newBRInventory.setAllocatedQuantity(0);
+            return newBRInventory;
+        });
+
+        brInventory.setAllocatedQuantity(brInventory.getAllocatedQuantity() + quantityToAllocate);
+        bloodRequestInventoryRepository.save(brInventory);
+
+        bloodRequest.setStatus(RequestStatus.ALLOCATED);
+        bloodRequestRepository.save(bloodRequest);
+
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Inventory allocated successfully")
+                .build());
+    }
+
+
+
     private InventoryAllocationResponse mapToInventoryAllocationResponse(BloodRequestInventory allocation) {
+        Inventory inventory = allocation.getInventory();
         return InventoryAllocationResponse.builder()
                 .allocationId(allocation.getId())
-                .inventoryId(allocation.getInventory().getInventoryId())
-                .bloodType(allocation.getInventory().getBloodType().getBloodTypeId())
-                .bloodComponent(allocation.getInventory().getBloodComponent().getComponentId())
+                .inventoryId(inventory.getInventoryId())
+                .bloodType(
+                        inventory.getBloodType() != null ? inventory.getBloodType().getBloodTypeId() : null
+                )
+                .bloodComponent(
+                        inventory.getBloodComponent() != null ? inventory.getBloodComponent().getComponentId() : null
+                )
                 .quantityAllocated(allocation.getAllocatedQuantity())
                 .build();
+
     }
 }

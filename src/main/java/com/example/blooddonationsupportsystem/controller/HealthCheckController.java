@@ -1,12 +1,14 @@
 package com.example.blooddonationsupportsystem.controller;
 
-import com.example.blooddonationsupportsystem.dtos.request.bloodrequest.BloodRequestAllocationRequest;
+
+import com.example.blooddonationsupportsystem.dtos.request.healthCheck.HealthCheckRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
-import com.example.blooddonationsupportsystem.service.bloodRequest.IBloodRequestService;
+import com.example.blooddonationsupportsystem.service.healthCheck.HealthCheckService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +16,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/blood-requests")
+@RequestMapping("/api/v1/health-check")
 @RequiredArgsConstructor
 @CrossOrigin("*")
-public class BloodRequestController {
-    private final IBloodRequestService bloodRequestService;
+public class HealthCheckController {
 
-    @PostMapping
-    public ResponseEntity<?> createBloodRequest(
-            @Valid @RequestBody BloodRequestAllocationRequest request,
+    private final HealthCheckService healthCheckService;
+
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> submitHealthCheck(
+            @PathVariable Integer userId,
+            @Valid @RequestBody HealthCheckRequest healthCheckRequest,
             BindingResult result
     ) {
         if (result.hasErrors()) {
@@ -37,24 +41,12 @@ public class BloodRequestController {
                             .build()
             );
         }
-        return bloodRequestService.createRequest(request);
+        return healthCheckService.createHealthCheck(userId, healthCheckRequest);
     }
 
-    @GetMapping
-    public ResponseEntity<?> getAllBloodRequests() {
-        return bloodRequestService.getAllRequests();
-    }
-
-    @GetMapping("/{requestId}/inventory")
-    public ResponseEntity<?> getInventoryForRequest(@PathVariable Integer requestId) {
-        return bloodRequestService.getInventoryForRequest(requestId);
-    }
-
-    @PutMapping("/{requestId}/allocate")
-    public ResponseEntity<?> allocateInventoryToRequest(
-            @PathVariable Integer requestId
-    ) {
-
-        return bloodRequestService.allocateInventory(requestId);
+    @GetMapping("/users/{userId}/health-checks")
+    @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
+    public ResponseEntity<?> getHealthChecksByUser(@PathVariable Integer userId) {
+        return healthCheckService.getHealthChecksByUserId(userId);
     }
 }

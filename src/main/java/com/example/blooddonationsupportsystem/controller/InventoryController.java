@@ -35,7 +35,7 @@ public class InventoryController {
             return ResponseEntity.badRequest().body(
                     ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message(String.valueOf(errorMessages))
+                            .message(String.join(", ", errorMessages))
                             .build()
             );
         }
@@ -63,7 +63,7 @@ public class InventoryController {
             return ResponseEntity.badRequest().body(
                     ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message(String.valueOf(errorMessages))
+                            .message(String.join(", ", errorMessages))
                             .build()
             );
         }

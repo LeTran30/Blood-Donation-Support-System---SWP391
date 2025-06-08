@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.service.reminder;
 
 import com.example.blooddonationsupportsystem.dtos.request.reminder.ReminderRequest;
+import com.example.blooddonationsupportsystem.utils.ReminderType;
 import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 
@@ -19,5 +20,5 @@ public interface IReminderService {
 
     ResponseEntity<?> deleteReminder(Integer reminderId);
 
-    ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate);
+    ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate, ReminderType reminderType);
 }

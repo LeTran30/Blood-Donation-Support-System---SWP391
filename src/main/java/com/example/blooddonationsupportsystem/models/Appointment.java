@@ -26,5 +26,4 @@ public class Appointment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status; // Scheduled, Completed, Cancelled
-
 }

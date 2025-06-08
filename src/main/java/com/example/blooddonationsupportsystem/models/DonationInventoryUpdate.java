@@ -1,27 +1,29 @@
 package com.example.blooddonationsupportsystem.models;
 
+import com.example.blooddonationsupportsystem.utils.DonationInventoryUpdateId;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "donation_inventory_update")
-@Data//toString
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class DonationInventoryUpdate {
-    @Id
+
+    @EmbeddedId
+    private DonationInventoryUpdateId id;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("bloodDonation")
     @JoinColumn(name = "donationId", nullable = false)
     private BloodDonation bloodDonation;
 
-    @Id
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("inventory")
     @JoinColumn(name = "inventoryId", nullable = false)
     private Inventory inventory;
 
@@ -31,5 +33,4 @@ public class DonationInventoryUpdate {
 
     @Column(nullable = false)
     private LocalDateTime addedAt = LocalDateTime.now();
-
 }

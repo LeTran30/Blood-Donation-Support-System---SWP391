@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.models;
 
+import com.example.blooddonationsupportsystem.utils.ReminderType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +26,9 @@ public class Reminder {
     @Column(nullable = false)
     private LocalDate nextDate;
 
-    private String reminderType;
+    @Enumerated(EnumType.STRING)
+    private ReminderType reminderType;
+
     private String message;
 
     private Boolean sent = false;
