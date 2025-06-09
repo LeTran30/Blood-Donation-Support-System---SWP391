@@ -8,7 +8,7 @@ open:
     description: API for the blood-donation-support system
     licenseUrl: "https://example.com/license"  # Replace with actual license URL
     licenseName: API License
-    serversUrl: https://localhost:8080
+    serversUrl: https://bds-system.azurewebsites.net
     serversDescription: Azure Production
 
 springdoc:
