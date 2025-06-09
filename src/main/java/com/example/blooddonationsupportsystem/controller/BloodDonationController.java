@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -28,8 +29,11 @@ public class BloodDonationController {
     private final IInventoryService inventoryService;
 
     @GetMapping()
-    public ResponseEntity<?> getBloodDonation() {
-        List<BloodDonationResponse> bloodDonations = bloodDonationService.getAllBloodDonations();
+    public ResponseEntity<?> getBloodDonation(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<BloodDonationResponse> bloodDonations = bloodDonationService.getAllBloodDonations(page, size);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)

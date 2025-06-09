@@ -85,7 +85,9 @@ public class DistanceSearchService implements IDistanceSearchService {
                 .message("Nearby donors found")
                 .data(matchedResults)
                 .build());
-    } @Override
+    }
+
+    @Override
     public ResponseEntity<?> getSearchHistory(Integer userId) {
         if (!userRepository.existsById(userId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

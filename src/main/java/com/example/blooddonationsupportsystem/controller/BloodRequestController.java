@@ -41,13 +41,21 @@ public class BloodRequestController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllBloodRequests() {
-        return bloodRequestService.getAllRequests();
+    public ResponseEntity<?> getAllBloodRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return bloodRequestService.getAllRequests(page, size);
     }
 
     @GetMapping("/{requestId}/inventory")
-    public ResponseEntity<?> getInventoryForRequest(@PathVariable Integer requestId) {
-        return bloodRequestService.getInventoryForRequest(requestId);
+    public ResponseEntity<?> getInventoryForRequest(
+            @PathVariable Integer requestId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return bloodRequestService.getInventoryForRequest(requestId, page, size);
     }
 
     @PutMapping("/{requestId}/allocate")

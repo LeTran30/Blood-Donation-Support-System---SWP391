@@ -3,6 +3,8 @@ package com.example.blooddonationsupportsystem.repositories;
 import com.example.blooddonationsupportsystem.models.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,9 +24,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.status = true AND " +
             "(6371 * acos(cos(radians(:lat)) * cos(radians(u.latitude)) * cos(radians(u.longitude) - radians(:lon)) + sin(radians(:lat)) * sin(radians(u.latitude)))) <= :radiusKm")
-    List<User> findUsersNearby(@Param("lat") Double lat,
+    Page<User> findUsersNearby(@Param("lat") Double lat,
                                @Param("lon") Double lon,
-                               @Param("radiusKm") Double radiusKm);
+                               @Param("radiusKm") Double radiusKm,
+                               Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.bloodType.bloodTypeId = :bloodTypeId")
     List<User> findAllByBloodTypeId(@Param("bloodTypeId") Integer bloodTypeId);

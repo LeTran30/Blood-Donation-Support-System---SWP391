@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 
 public interface IReminderService {
-    ResponseEntity<?> getUserReminders(Integer userId);
+    ResponseEntity<?> getUserReminders(Integer userId, int page, int size);
 
     void createNextDonationReminder(Integer userId, LocalDate lastDonationDate);
 
@@ -20,5 +20,5 @@ public interface IReminderService {
 
     ResponseEntity<?> deleteReminder(Integer reminderId);
 
-    ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate, ReminderType reminderType);
+    ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate, ReminderType reminderType, int page, int size);
 }

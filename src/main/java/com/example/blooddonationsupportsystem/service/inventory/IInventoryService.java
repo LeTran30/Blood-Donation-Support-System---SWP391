@@ -4,11 +4,12 @@ import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRe
 import com.example.blooddonationsupportsystem.dtos.responses.inventory.InventoryResponse;
 import com.example.blooddonationsupportsystem.models.BloodDonation;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface IInventoryService {
-    List<InventoryResponse> getAllInventory();
+    Page<InventoryResponse> getAllInventory(int page, int size);
     InventoryResponse getInventoryById(Integer id);
     void createInventory(InventoryRequest request);
     void updateInventory(Integer id, InventoryRequest request);

@@ -27,4 +27,7 @@ public class HealthCheckRequest {
     private Boolean isEligible;
 
     private String ineligibleReason;
+
+    // Blood type ID to update user's blood type during health check
+    private Integer bloodTypeId;
 }

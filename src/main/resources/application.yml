@@ -24,9 +24,9 @@ spring:
   application:
     name: blood-donation-support-system
   datasource:
-    url: jdbc:mysql://yamabiko.proxy.rlwy.net:20627/BloodDonationSupportSystem
-    username: root
-    password: xALQioBVyBIRykhazVXIqfZnBGuElMRG
+    url: ${DB_URL:jdbc:mysql://yamabiko.proxy.rlwy.net:20627/BloodDonationSupportSystem}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:xALQioBVyBIRykhazVXIqfZnBGuElMRG}
   jpa:
     show-sql: false
     hibernate:
@@ -37,8 +37,7 @@ spring:
 application:
   security:
     jwt:
-      secret-key: "b60c9e7a2e251192f67c2b02773e76c8096a6e38ea49627334eddae82dc7da95"
-      expiration: 604800000  # 1 day in milliseconds
-#      expiration: 36000  # 1 day in milliseconds
+      secret-key: ${JWT_SECRET_KEY:b60c9e7a2e251192f67c2b02773e76c8096a6e38ea49627334eddae82dc7da95}
+      expiration: ${JWT_EXPIRATION:604800000}  # 7 days in milliseconds
       refresh-token:
-        expiration: 604800000  # 7 days in milliseconds
+        expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days in milliseconds

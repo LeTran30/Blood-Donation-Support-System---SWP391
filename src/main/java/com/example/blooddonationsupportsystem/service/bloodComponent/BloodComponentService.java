@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.Bloo
 import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,13 +15,17 @@ public class BloodComponentService implements IBloodComponentService {
     private final BloodComponentRepository bloodComponentRepository;
 
     @Override
-    public List<BloodComponentResponse> getAllBloodComponents() {
-        List<BloodComponent> bloodResponse = bloodComponentRepository.findAll();
-        return bloodResponse.stream()
+    public Page<BloodComponentResponse> getAllBloodComponents(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BloodComponent> bloodPage = bloodComponentRepository.findAll(pageable);
+
+        List<BloodComponentResponse> responseList = bloodPage.getContent().stream()
                 .map(bloodComponent -> BloodComponentResponse.builder()
                         .componentId(bloodComponent.getComponentId())
                         .componentName(bloodComponent.getComponentName())
                         .build())
                 .toList();
+
+        return new PageImpl<>(responseList, pageable, bloodPage.getTotalElements());
     }
 }

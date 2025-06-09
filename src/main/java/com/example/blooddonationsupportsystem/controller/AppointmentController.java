@@ -68,6 +68,8 @@ public class AppointmentController {
     @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
     public ResponseEntity<?> getAppointmentsByUser(
             @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             Principal principal
     ) {
         String email = principal.getName();
@@ -75,7 +77,7 @@ public class AppointmentController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (userId == null || currentUser.getRole() == Role.MEMBER) {
-            return appointmentService.getAppointmentsByUserId(currentUser.getId());
+            return appointmentService.getAppointmentsByUserId(currentUser.getId(), page, size);
         }
 
         if (currentUser.getRole() == Role.STAFF) {
@@ -87,7 +89,7 @@ public class AppointmentController {
                                 .message("User with id " + userId + " not found")
                                 .build());
             }
-            return appointmentService.getAppointmentsByUserId(userId);
+            return appointmentService.getAppointmentsByUserId(userId, page, size);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -124,9 +126,11 @@ public class AppointmentController {
             @RequestParam(required = false) LocalDateTime from,
             @RequestParam(required = false) LocalDateTime to,
             @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer userId
     ) {
-        return appointmentService.getAppointmentsWithFilters(from, to, status, userId);
+        return appointmentService.getAppointmentsWithFilters(from, to, status, userId, page, size);
     }
 
 

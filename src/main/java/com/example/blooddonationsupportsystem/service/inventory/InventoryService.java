@@ -11,6 +11,9 @@ import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.InventoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,9 +28,10 @@ public class InventoryService implements IInventoryService {
     private final BloodTypeRepository bloodTypeRepository;
 
     @Override
-    public List<InventoryResponse> getAllInventory() {
-        List<Inventory> inventoryList = inventoryRepository.findAll();
-        return inventoryList
+    public Page<InventoryResponse> getAllInventory(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Inventory> inventoryPage = inventoryRepository.findAll(pageRequest);
+        List<InventoryResponse> responseList = inventoryPage
                 .stream()
                 .map(inventory -> InventoryResponse.builder()
                         .id(inventory.getInventoryId())
@@ -36,6 +40,7 @@ public class InventoryService implements IInventoryService {
                         .lastUpdated(inventory.getLastUpdated())
                         .build())
                 .toList();
+        return new PageImpl<>(responseList, pageRequest, inventoryPage.getTotalElements());
     }
 
     @Override

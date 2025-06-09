@@ -83,12 +83,15 @@ public class InventoryController {
      *         message and a list of all inventory records
      */
     @GetMapping
-    public ResponseEntity<?> getAllInventory() {
+    public ResponseEntity<?> getAllInventory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Successfully get all inventory")
-                        .data(inventoryService.getAllInventory())
+                        .data(inventoryService.getAllInventory(page, size))
                         .build()
         );
     }

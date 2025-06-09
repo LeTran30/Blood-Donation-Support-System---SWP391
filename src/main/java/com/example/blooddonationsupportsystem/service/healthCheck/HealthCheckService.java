@@ -5,6 +5,7 @@ import com.example.blooddonationsupportsystem.dtos.request.healthCheck.HealthChe
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.healthCheck.HealthCheckResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
+import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.HealthCheck;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
@@ -14,12 +15,17 @@ import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -27,17 +33,18 @@ import java.util.Optional;
 public class HealthCheckService implements IHealthCheckService {
     private final HealthCheckRepository healthCheckRepository;
     private final AppointmentRepository appointmentRepository;
-    private final UserRepository userRepository;
     private final BloodTypeRepository bloodTypeRepository;
+    private final UserRepository userRepository;
+
     @Override
     @Transactional
     public ResponseEntity<?> createHealthCheck(Integer appointmentId, HealthCheckRequest request) {
         try {
-            // Tìm appointment
+            // Find appointment
             Appointment appointment = appointmentRepository.findById(appointmentId)
                     .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-            // Kiểm tra trạng thái
+            // Check status
             if (!appointment.getStatus().equals(AppointmentStatus.SCHEDULED)) {
                 return ResponseEntity.badRequest().body(ResponseObject.builder()
                         .status(HttpStatus.BAD_REQUEST)
@@ -46,6 +53,15 @@ public class HealthCheckService implements IHealthCheckService {
             }
 
             User user = appointment.getUser();
+
+            // Update user's blood type if provided in the request
+            if (request.getBloodTypeId() != null) {
+                Optional<BloodType> bloodType = bloodTypeRepository.findById(request.getBloodTypeId());
+                if (bloodType.isPresent()) {
+                    user.setBloodType(bloodType.get());
+                    userRepository.save(user);
+                }
+            }
 
             HealthCheck healthCheck = HealthCheck.builder()
                     .user(user)
@@ -76,17 +92,20 @@ public class HealthCheckService implements IHealthCheckService {
     }
 
     @Override
-    public ResponseEntity<?> getHealthChecksByUserId(Integer userId) {
+    public ResponseEntity<?> getHealthChecksByUserId(Integer userId, int page, int size) {
         try {
-            List<HealthCheck> healthChecks = healthCheckRepository.findByUserId(userId);
-            if (healthChecks.isEmpty()) {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("checkedAt").descending());
+            Page<HealthCheck> healthChecksPage = healthCheckRepository.findByUserId(userId, pageable);
+
+            if (healthChecksPage.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
                                 .message("No health check records found for userId: " + userId)
                                 .build());
             }
-            List<HealthCheckResponse> responses = healthChecks.stream()
+
+            List<HealthCheckResponse> responses = healthChecksPage.getContent().stream()
                     .map(hc -> HealthCheckResponse.builder()
                             .healthCheckId(hc.getId())
                             .pulse(hc.getPulse())
@@ -101,7 +120,15 @@ public class HealthCheckService implements IHealthCheckService {
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("Health check records retrieved successfully")
-                    .data(responses)
+                    .data(Map.of(
+                            "content", responses,
+                            "page", Map.of(
+                                    "size", healthChecksPage.getSize(),
+                                    "number", healthChecksPage.getNumber(),
+                                    "totalElements", healthChecksPage.getTotalElements(),
+                                    "totalPages", healthChecksPage.getTotalPages()
+                            )
+                    ))
                     .build());
 
         } catch (Exception e) {
@@ -129,14 +156,23 @@ public class HealthCheckService implements IHealthCheckService {
     }
 
     private HealthCheckResponse mapToResponse(HealthCheck healthCheck) {
-        return HealthCheckResponse.builder()
+        HealthCheckResponse.HealthCheckResponseBuilder builder = HealthCheckResponse.builder()
                 .healthCheckId(healthCheck.getId())
                 .pulse(healthCheck.getPulse())
                 .bloodPressure(healthCheck.getBloodPressure())
                 .resultSummary(healthCheck.getResultSummary())
                 .isEligible(healthCheck.getIsEligible())
                 .ineligibleReason(healthCheck.getIneligibleReason())
-                .checkedAt(healthCheck.getCheckedAt())
-                .build();
+                .checkedAt(healthCheck.getCheckedAt());
+
+        // Add blood type information if available
+        User user = healthCheck.getUser();
+        if (user != null && user.getBloodType() != null) {
+            BloodType bloodType = user.getBloodType();
+            builder.bloodTypeId(bloodType.getBloodTypeId())
+                   .bloodTypeName(bloodType.getTypeName());
+        }
+
+        return builder.build();
     }
 }

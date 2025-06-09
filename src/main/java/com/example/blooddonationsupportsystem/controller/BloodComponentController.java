@@ -4,12 +4,10 @@ import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.Bloo
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.service.bloodComponent.IBloodComponentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,8 +26,11 @@ public class BloodComponentController {
      */
     @GetMapping
 //    @PreAuthorize("permitAll()")
-    ResponseEntity<ResponseObject> getBloodComponent() {
-        List<BloodComponentResponse> bloodComponents = bloodComponentService.getAllBloodComponents();
+    ResponseEntity<ResponseObject> getBloodComponent(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<BloodComponentResponse> bloodComponents = bloodComponentService.getAllBloodComponents(page, size);
         return ResponseEntity.ok(ResponseObject.builder()
                 .message("Get list of blood Components successfully")
                 .status(HttpStatus.OK)

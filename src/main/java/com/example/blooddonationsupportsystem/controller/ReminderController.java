@@ -116,15 +116,19 @@ public class ReminderController {
             @RequestParam(required = false) Boolean sent,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-            @RequestParam(required = false) ReminderType reminderType
+            @RequestParam(required = false) ReminderType reminderType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return reminderService.getRemindersWithFilter(userId, sent, fromDate, toDate, reminderType);
+        return reminderService.getRemindersWithFilter(userId, sent, fromDate, toDate, reminderType, page, size);
     }
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
     public ResponseEntity<?> getUserReminders(
             @PathVariable Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             Principal principal
     ) {
         User currentUser = userRepository.findByEmail(principal.getName())
@@ -138,7 +142,7 @@ public class ReminderController {
                             .build());
         }
 
-        return reminderService.getUserReminders(userId);
+        return reminderService.getUserReminders(userId, page, size);
     }
 
 }

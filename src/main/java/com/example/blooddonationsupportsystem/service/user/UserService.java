@@ -8,6 +8,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.user.*;
 import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.Token;
 import com.example.blooddonationsupportsystem.models.User;
+import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.TokenRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.jwt.IJwtService;
@@ -19,6 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,6 +51,7 @@ public class UserService implements IUserService {
     private final TokenRepository tokenRepository;
     private final ModelMapper modelMapper;
     private final OtpService otpService;
+    private final BloodTypeRepository bloodTypeRepository;
 
     @Override
     public ResponseEntity<RegisterResponse> register(RegisterRequest registerRequest) {
@@ -166,8 +171,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public ResponseEntity<ListUserResponse> getListUser() {
+    public ResponseEntity<?> getListUser(int page, int size) {
         try {
+            PageRequest pageRequest = PageRequest.of(page, size);
             // Lấy token từ header Authorization
             String authHeader = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
                     .getRequest().getHeader("Authorization");
@@ -206,15 +212,25 @@ public class UserService implements IUserService {
             }
 
             // Lấy danh sách người dùng nếu người yêu cầu có quyền admin
-            List<User> users = userRepository.findAll();
+            Page<User> users = userRepository.findAll(pageRequest);
             List<UserResponse> userResponses = users.stream()
                     .map(user -> modelMapper.map(user, UserResponse.class))
                     .collect(Collectors.toList());
-
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(ListUserResponse.builder()
-                            .users(userResponses)
-                            .message("Success")
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("Users retrieved successfully")
+                            .data(Map.of(
+                                    "content", ListUserResponse.builder()
+                                            .users(userResponses).
+                                            build(),
+                                    "page", Map.of(
+                                            "size", users.getSize(),
+                                            "number", users.getNumber(),
+                                            "totalElements", users.getTotalElements(),
+                                            "totalPages", users.getTotalPages()
+                                    )
+                            ))
                             .build());
 
         } catch (Exception e) {
@@ -399,6 +415,13 @@ public class UserService implements IUserService {
             if (request.getAddress() != null) {
                 user.setAddress(request.getAddress());
             }
+            if (request.getBloodTypeId() != null) {
+                BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
+                        .orElse(null);
+                if (bloodType != null) {
+                    user.setBloodType(bloodType);
+                }
+            }
 
             userRepository.save(user);
 
@@ -422,9 +445,10 @@ public class UserService implements IUserService {
 
 
     @Override
-    public ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm) {
+    public ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm, int page, int size) {
         try {
-            List<User> nearbyUsers = userRepository.findUsersNearby(lat, lon, radiusKm);
+            PageRequest pageRequest = PageRequest.of(page, size);
+            Page<User> nearbyUsers = userRepository.findUsersNearby(lat, lon, radiusKm, pageRequest);
             List<UserResponse> userResponses = nearbyUsers.stream()
                     .map(user -> modelMapper.map(user, UserResponse.class))
                     .collect(Collectors.toList());
@@ -432,7 +456,17 @@ public class UserService implements IUserService {
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("Nearby donors found")
-                    .data(userResponses)
+                    .data(Map.of(
+                            "content", ListUserResponse.builder()
+                                    .users(userResponses)
+                                    .build(),
+                            "page", Map.of(
+                                    "size", nearbyUsers.getSize(),
+                                    "number", nearbyUsers.getNumber(),
+                                    "totalElements", nearbyUsers.getTotalElements(),
+                                    "totalPages", nearbyUsers.getTotalPages()
+                            )
+                    ))
                     .build());
 
         } catch (Exception e) {

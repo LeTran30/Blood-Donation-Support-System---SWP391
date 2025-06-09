@@ -9,5 +9,5 @@ public interface IHealthCheckService {
 
     ResponseEntity<?> createHealthCheck(Integer appointmentId, @Valid HealthCheckRequest request);
 
-    ResponseEntity<?> getHealthChecksByUserId(Integer userId);
+    ResponseEntity<?> getHealthChecksByUserId(Integer userId, int page, int size);
 }

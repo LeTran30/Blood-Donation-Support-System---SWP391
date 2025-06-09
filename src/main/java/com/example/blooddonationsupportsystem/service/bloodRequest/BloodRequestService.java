@@ -11,12 +11,17 @@ import com.example.blooddonationsupportsystem.utils.RequestStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -60,9 +65,11 @@ public class BloodRequestService implements IBloodRequestService {
     }
 
     @Override
-    public ResponseEntity<?> getAllRequests() {
-        List<BloodRequest> requests = bloodRequestRepository.findAll();
-        List<BloodRequestResponse> responses = requests.stream()
+    public ResponseEntity<?> getAllRequests(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BloodRequest> requests = bloodRequestRepository.findAll(pageable);
+
+        List<BloodRequestResponse> responses = requests.getContent().stream()
                 .map(req -> modelMapper.map(req, BloodRequestResponse.class))
                 .toList();
 
@@ -70,13 +77,22 @@ public class BloodRequestService implements IBloodRequestService {
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("List of blood requests retrieved successfully")
-                        .data(responses)
+                        .data(Map.of(
+                                "content", responses,
+                                "page", Map.of(
+                                        "size", requests.getSize(),
+                                        "number", requests.getNumber(),
+                                        "totalElements", requests.getTotalElements(),
+                                        "totalPages", requests.getTotalPages()
+                                )
+                        ))
                         .build()
         );
     }
-
-    public ResponseEntity<?> getInventoryForRequest(Integer requestId) {
-        List<BloodRequestInventory> inventoryAllocations = bloodRequestInventoryRepository.findByBloodRequestRequestId(requestId);
+    @Override
+    public ResponseEntity<?> getInventoryForRequest(Integer requestId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BloodRequestInventory> inventoryAllocations = bloodRequestInventoryRepository.findByBloodRequestRequestId(requestId, pageable);
 
         if (inventoryAllocations.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -86,7 +102,7 @@ public class BloodRequestService implements IBloodRequestService {
                             .build());
         }
 
-        List<InventoryAllocationResponse> responseList = inventoryAllocations.stream()
+        List<InventoryAllocationResponse> responseList = inventoryAllocations.getContent().stream()
                 .map(this::mapToInventoryAllocationResponse)
                 .toList();
 
@@ -94,11 +110,19 @@ public class BloodRequestService implements IBloodRequestService {
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Inventory allocations retrieved successfully")
-                        .data(responseList)
+                        .data(Map.of(
+                                "content", responseList,
+                                "page", Map.of(
+                                        "size", inventoryAllocations.getSize(),
+                                        "number", inventoryAllocations.getNumber(),
+                                        "totalElements", inventoryAllocations.getTotalElements(),
+                                        "totalPages", inventoryAllocations.getTotalPages()
+                                )
+                        ))
                         .build()
         );
-
     }
+
 
     @Transactional
     @Override

@@ -5,6 +5,10 @@ import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.Blood
 import com.example.blooddonationsupportsystem.models.*;
 import com.example.blooddonationsupportsystem.repositories.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,7 +21,6 @@ public class BloodDonationService implements IBloodDonationService {
     private final BloodTypeRepository bloodTypeRepository;
     private final HealthCheckRepository healthCheckRepository;
     private final UserRepository userRepository;
-    private final InventoryRepository inventoryRepository;
     private final BloodComponentRepository bloodComponentRepository;
 
     @Override
@@ -38,8 +41,10 @@ public class BloodDonationService implements IBloodDonationService {
     }
 
     @Override
-    public List<BloodDonationResponse> getAllBloodDonations() {
-        return bloodDonationRepository.findAll().stream()
+    public Page<BloodDonationResponse> getAllBloodDonations(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BloodDonation> bloodPage = bloodDonationRepository.findAll(pageable);
+        List<BloodDonationResponse> bloodDonationResponses = bloodDonationRepository.findAll().stream()
                 .map(donation -> BloodDonationResponse.builder()
                         .donationId(donation.getDonationId())
                         .user(donation.getUser().getId())
@@ -50,6 +55,7 @@ public class BloodDonationService implements IBloodDonationService {
                         .healthCheck(donation.getHealthCheck().getId())
                         .build())
                 .toList();
+        return new PageImpl<>(bloodDonationResponses, pageable, bloodPage.getTotalElements());
     }
 
     @Override

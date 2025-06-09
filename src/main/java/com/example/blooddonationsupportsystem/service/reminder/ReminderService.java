@@ -10,8 +10,11 @@ import com.example.blooddonationsupportsystem.repositories.NotificationLogReposi
 import com.example.blooddonationsupportsystem.repositories.ReminderRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.utils.ReminderType;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +35,8 @@ public class ReminderService implements IReminderService {
     private final ReminderFactory reminderFactory;
     private final ModelMapper modelMapper;
     @Override
-    public ResponseEntity<?> getUserReminders(Integer userId) {
+    public ResponseEntity<?> getUserReminders(Integer userId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
         if (!userRepository.existsById(userId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
@@ -41,7 +45,7 @@ public class ReminderService implements IReminderService {
                             .build());
         }
 
-        List<Reminder> reminders = reminderRepository.findAllByUserId(userId);
+        Page<Reminder> reminders = reminderRepository.findAllByUserId(userId, pageRequest);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
@@ -54,10 +58,18 @@ public class ReminderService implements IReminderService {
     }
 
     @Scheduled(cron = "0 0 8 * * *")
+    @Transactional
     public void checkReminders() {
         List<Reminder> dueReminders = reminderRepository.findByNextDateAndSentFalse(LocalDate.now());
         for (Reminder reminder : dueReminders) {
-            // TODO: Gọi service gửi notification thực tế ở đây
+            // Create notification log
+            NotificationLog log = NotificationLog.builder()
+                    .user(reminder.getUser())
+                    .message("[Reminder] " + reminder.getMessage())
+                    .build();
+            notificationLogRepository.save(log);
+
+            // Mark reminder as sent
             reminder.setSent(true);
             reminderRepository.save(reminder);
         }
@@ -70,6 +82,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
+    @jakarta.transaction.Transactional
     public void createNextDonationReminder(Integer userId, LocalDate lastDonationDate) {
         LocalDate nextDate = lastDonationDate.plusMonths(3);
 
@@ -85,6 +98,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
+    @jakarta.transaction.Transactional
     public ResponseEntity<?> sendReminder(ReminderRequest request) {
         Optional<User> user = userRepository.findById(request.getUserId());
         if (user.isEmpty()) {
@@ -134,6 +148,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
+    @jakarta.transaction.Transactional
     public ResponseEntity<?> updateReminder(Integer reminderId, ReminderRequest request) {
         Optional<Reminder> reminderOpt = reminderRepository.findById(reminderId);
         if (reminderOpt.isEmpty()) {
@@ -146,7 +161,7 @@ public class ReminderService implements IReminderService {
 
         Reminder reminder = reminderOpt.get();
 
-        // Update fields nếu có trong request
+        // Update fields if present in the request
         if (request.getNextDate() != null) {
             reminder.setNextDate(request.getNextDate());
         }
@@ -172,6 +187,7 @@ public class ReminderService implements IReminderService {
         );
     }
     @Override
+    @jakarta.transaction.Transactional
     public ResponseEntity<?> deleteReminder(Integer reminderId) {
         if (!reminderRepository.existsById(reminderId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -190,7 +206,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
-    public ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate,ReminderType reminderType) {
+    public ResponseEntity<?> getRemindersWithFilter(Integer userId, Boolean sent, LocalDate fromDate, LocalDate toDate, ReminderType reminderType, int page, int size) {
         Specification<Reminder> spec = (root, query, cb) -> cb.conjunction();
 
         if (userId != null) {
@@ -218,8 +234,10 @@ public class ReminderService implements IReminderService {
                     criteriaBuilder.equal(root.get("reminderType"), reminderType));
         }
 
-        List<Reminder> reminders = reminderRepository.findAll(spec);
-        List<ReminderResponse> responses = reminders.stream()
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Reminder> reminders = reminderRepository.findAll(spec, pageRequest);
+
+        List<ReminderResponse> responses = reminders.getContent().stream()
                 .map(this::mapWithUserId)
                 .toList();
 
@@ -227,7 +245,15 @@ public class ReminderService implements IReminderService {
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Reminders retrieved successfully")
-                        .data(responses)
+                        .data(java.util.Map.of(
+                                "content", responses,
+                                "page", java.util.Map.of(
+                                        "size", reminders.getSize(),
+                                        "number", reminders.getNumber(),
+                                        "totalElements", reminders.getTotalElements(),
+                                        "totalPages", reminders.getTotalPages()
+                                )
+                        ))
                         .build()
         );
     }

@@ -22,7 +22,7 @@ public interface IUserService {
 
     void refresh(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
-    ResponseEntity<ListUserResponse> getListUser();
+    ResponseEntity<?> getListUser(int page, int size);
 
 //    ResponseEntity<?> forgotPassword(String email);
 
@@ -34,6 +34,5 @@ public interface IUserService {
 
     ResponseEntity<?> updateUser(Integer id, UpdateUserRequest request);
 
-    ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm);
-
+    ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm, int page, int size);
 }

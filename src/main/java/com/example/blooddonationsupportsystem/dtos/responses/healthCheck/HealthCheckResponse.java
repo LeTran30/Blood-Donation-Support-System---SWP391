@@ -2,6 +2,7 @@ package com.example.blooddonationsupportsystem.dtos.responses.healthCheck;
 
 import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.models.BloodType;
+import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,4 +23,8 @@ public class HealthCheckResponse {
     private LocalDateTime checkedAt;
     private Boolean isEligible;
     private String ineligibleReason;
+
+    // User's blood type information
+    private Integer bloodTypeId;
+    private BloodTypeName bloodTypeName;
 }

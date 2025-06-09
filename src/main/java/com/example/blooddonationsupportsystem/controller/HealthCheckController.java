@@ -3,7 +3,7 @@ package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.healthCheck.HealthCheckRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
-import com.example.blooddonationsupportsystem.service.healthCheck.HealthCheckService;
+import com.example.blooddonationsupportsystem.service.healthCheck.IHealthCheckService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import java.util.List;
 @CrossOrigin("*")
 public class HealthCheckController {
 
-    private final HealthCheckService healthCheckService;
+    private final IHealthCheckService healthCheckService;
 
     @PostMapping("/{userId}")
     public ResponseEntity<?> submitHealthCheck(
@@ -46,7 +46,11 @@ public class HealthCheckController {
 
     @GetMapping("/users/{userId}/health-checks")
     @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
-    public ResponseEntity<?> getHealthChecksByUser(@PathVariable Integer userId) {
-        return healthCheckService.getHealthChecksByUserId(userId);
+    public ResponseEntity<?> getHealthChecksByUser(
+            @PathVariable Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return healthCheckService.getHealthChecksByUserId(userId, page, size);
     }
 }

@@ -1,6 +1,8 @@
 package com.example.blooddonationsupportsystem.repositories;
 
 import com.example.blooddonationsupportsystem.models.Appointment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -12,6 +14,7 @@ import java.util.List;
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer>,
         JpaSpecificationExecutor<Appointment> {
 
-    List<Appointment> findAllByUserId(Integer userId);
+    Page<Appointment> findAllByUserId(Integer userId,
+                                      Pageable pageable);
 
 }

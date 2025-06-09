@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 public interface IBloodRequestService {
     ResponseEntity<?> createRequest(BloodRequestAllocationRequest request);
 
-    ResponseEntity<?> getAllRequests();
+    ResponseEntity<?> getAllRequests(int page, int size);
 
-    ResponseEntity<?> getInventoryForRequest(Integer requestId);
+    ResponseEntity<?> getInventoryForRequest(Integer requestId, int page, int size);
 
     @Transactional
     ResponseEntity<?> allocateInventory(Integer requestId);

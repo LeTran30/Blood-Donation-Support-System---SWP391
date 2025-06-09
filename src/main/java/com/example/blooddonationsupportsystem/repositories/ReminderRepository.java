@@ -1,6 +1,8 @@
 package com.example.blooddonationsupportsystem.repositories;
 
 import com.example.blooddonationsupportsystem.models.Reminder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -12,7 +14,7 @@ import java.util.List;
 public interface ReminderRepository extends JpaRepository<Reminder, Integer>,
         JpaSpecificationExecutor<Reminder> {
 
-    List<Reminder> findAllByUserId(Integer userId);
+    Page<Reminder> findAllByUserId(Integer userId, Pageable pageable);
 
     List<Reminder> findByNextDateAndSentFalse(LocalDate now);
 }

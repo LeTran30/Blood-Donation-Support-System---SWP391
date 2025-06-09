@@ -11,6 +11,10 @@ import com.example.blooddonationsupportsystem.service.reminder.IReminderService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -74,8 +77,7 @@ public class AppointmentService implements IAppointmentService{
         ));
     }
 
-    @Override
-    public ResponseEntity<?> getAppointmentsByUserId(Integer userId) {
+    public ResponseEntity<?> getAppointmentsByUserId(Integer userId, int page, int size) {
         if (!userRepository.existsById(userId)) {
             return ResponseEntity.ok(
                     ResponseObject.builder()
@@ -85,18 +87,18 @@ public class AppointmentService implements IAppointmentService{
             );
         }
 
-        List<Appointment> appointments = appointmentRepository.findAllByUserId(userId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending());
+        Page<Appointment> appointments = appointmentRepository.findAllByUserId(userId, pageable);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Successfully retrieved appointments")
-                        .data(appointments.stream()
-                                .map(this::mapWithUserId)
-                                .toList())
+                        .data(appointments.map(this::mapWithUserId)) // map trả về dạng Page
                         .build()
         );
     }
+
 
     @Override
     public ResponseEntity<?> updateAppointmentStatus(Integer appointmentId, AppointmentStatus status) {
@@ -160,10 +162,9 @@ public class AppointmentService implements IAppointmentService{
                         .build()
         );
     }
-
     @Override
-    public ResponseEntity<?> getAppointmentsWithFilters(LocalDateTime fromDateTime, LocalDateTime toDateTime, AppointmentStatus status, Integer userId) {
-        Specification<Appointment> spec = (root, query, cb) -> cb.conjunction(); // always true
+    public ResponseEntity<?> getAppointmentsWithFilters(LocalDateTime fromDateTime, LocalDateTime toDateTime, AppointmentStatus status, Integer userId, int page, int size){
+        Specification<Appointment> spec = (root, query, cb) -> cb.conjunction();
 
         if (fromDateTime != null) {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("appointmentDate"), fromDateTime));
@@ -181,19 +182,36 @@ public class AppointmentService implements IAppointmentService{
             spec = spec.and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId));
         }
 
-        List<Appointment> appointments = appointmentRepository.findAll(spec);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("appointmentDate").descending());
+        Page<Appointment> appointmentsPage = appointmentRepository.findAll(spec, pageable);
+
+        List<AppointmentResponse> appointmentResponses = appointmentsPage
+                .getContent()
+                .stream()
+                .map(this::mapWithUserId)
+                .toList();
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("content", appointmentResponses);
+
+        Map<String, Object> pageInfo = new LinkedHashMap<>();
+        pageInfo.put("size", appointmentsPage.getSize());
+        pageInfo.put("number", appointmentsPage.getNumber());
+        pageInfo.put("totalElements", appointmentsPage.getTotalElements());
+        pageInfo.put("totalPages", appointmentsPage.getTotalPages());
+
+        data.put("page", pageInfo);
 
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Appointments retrieved successfully")
-                        .data(appointments.stream()
-                                .map(this::mapWithUserId)
-                                .toList())
+                        .data(data)
                         .build()
         );
     }
-    private AppointmentResponse mapWithUserId(Appointment appointment) {
+
+        private AppointmentResponse mapWithUserId(Appointment appointment) {
         AppointmentResponse response = modelMapper.map(appointment, AppointmentResponse.class);
         response.setUserId(appointment.getUser().getId());
         return response;

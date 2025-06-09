@@ -13,11 +13,11 @@ public interface IAppointmentService {
 
     ResponseEntity<?> getAppointmentById(Integer appointmentId);
 
-    ResponseEntity<?> getAppointmentsByUserId(Integer userId);
+    ResponseEntity<?> getAppointmentsByUserId(Integer userId, int page, int size);
 
     ResponseEntity<?> updateAppointmentStatus(Integer appointmentId, AppointmentStatus status);
 
     ResponseEntity<?> cancelAppointment(Integer appointmentId);
 
-    ResponseEntity<?> getAppointmentsWithFilters(LocalDateTime fromDateTime, LocalDateTime toDateTime, AppointmentStatus status, Integer userId);
+    ResponseEntity<?> getAppointmentsWithFilters(LocalDateTime fromDateTime, LocalDateTime toDateTime, AppointmentStatus status, Integer userId, int page, int size);
 }

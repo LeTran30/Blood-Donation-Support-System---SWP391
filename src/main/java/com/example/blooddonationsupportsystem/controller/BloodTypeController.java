@@ -4,15 +4,11 @@ import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
 import com.example.blooddonationsupportsystem.service.bloodType.IBloodTypeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/blood-type")
@@ -30,8 +26,11 @@ public class BloodTypeController {
      */
     @GetMapping
     @PreAuthorize("permitAll()")
-    ResponseEntity<ResponseObject> getBloodType() {
-        List<BloodTypeResponse> bloodTypes = bloodTypeService.getAllBloodTypes();
+    ResponseEntity<ResponseObject> getBloodType(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<BloodTypeResponse> bloodTypes = bloodTypeService.getAllBloodTypes(page, size);
         return ResponseEntity.ok(ResponseObject.builder()
                 .message("Get list of blood Components successfully")
                 .status(HttpStatus.OK)

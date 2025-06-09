@@ -27,8 +27,11 @@ public class UserController {
 
     @GetMapping("getUser")
     @PreAuthorize("hasAuthority('admin:read')")
-    public ResponseEntity<ListUserResponse> getUser() {
-        return userService.getListUser();
+    public ResponseEntity<?> getUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return userService.getListUser(page, size);
     }
 
     @GetMapping("/me")
@@ -64,9 +67,14 @@ public class UserController {
 
     @GetMapping("/nearby")
     @PreAuthorize("true")
-    public ResponseEntity<?> findNearbyDonors(@RequestParam Double lat, @RequestParam Double lon,
-                                              @RequestParam(defaultValue = "10") Double radiusKm) {
-        return userService.findNearbyDonors(lat, lon, radiusKm);
+    public ResponseEntity<?> findNearbyDonors(
+            @RequestParam Double lat, @RequestParam Double lon,
+            @RequestParam(defaultValue = "10") Double radiusKm,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+
+    ) {
+        return userService.findNearbyDonors(lat, lon, radiusKm, page, size);
     }
 
 }
