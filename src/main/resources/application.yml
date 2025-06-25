@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 open:
   api:
@@ -8,8 +8,8 @@ open:
     description: API for the blood-donation-support system
     licenseUrl: "https://example.com/license"  # Replace with actual license URL
     licenseName: API License
-#    serversUrl: https://bds-system.azurewebsites.net
-    serversUrl: http://localhost:8081
+   serversUrl: https://bds-system.azurewebsites.net
+    # serversUrl: http://localhost:8081
     serversDescription: Azure Production
 
 springdoc:
@@ -25,12 +25,12 @@ spring:
   application:
     name: blood-donation-support-system
   datasource:
-    url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
-    username: root
-    password: 12345
-#    url: ${DB_URL:jdbc:mysql://yamabiko.proxy.rlwy.net:20627/BloodDonationSupportSystem}
-#    username: ${DB_USERNAME:root}
-#    password: ${DB_PASSWORD:xALQioBVyBIRykhazVXIqfZnBGuElMRG}
+    # url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
+    # username: root
+    # password: 12345
+   url: ${DB_URL:jdbc:mysql://yamabiko.proxy.rlwy.net:20627/BloodDonationSupportSystem}
+   username: ${DB_USERNAME:root}
+   password: ${DB_PASSWORD:xALQioBVyBIRykhazVXIqfZnBGuElMRG}
 
   jpa:
     show-sql: false
