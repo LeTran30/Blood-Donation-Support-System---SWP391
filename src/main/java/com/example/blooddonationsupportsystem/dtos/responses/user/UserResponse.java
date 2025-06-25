@@ -12,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @Setter
 public class UserResponse {
+    private Integer id;
     private String fullName;
     private String email;
     @Enumerated(EnumType.STRING)

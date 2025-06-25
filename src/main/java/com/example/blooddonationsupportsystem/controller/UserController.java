@@ -21,6 +21,7 @@ import java.security.Principal;
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class UserController {
     private final IUserService userService;
     private final UserRepository userRepository;

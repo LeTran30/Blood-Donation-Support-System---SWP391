@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.controller;
 
+import com.example.blooddonationsupportsystem.dtos.request.bloodType.BloodTypeRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
 import com.example.blooddonationsupportsystem.service.bloodType.IBloodTypeService;
@@ -36,5 +37,21 @@ public class BloodTypeController {
                 .status(HttpStatus.OK)
                 .data(bloodTypes)
                 .build());
+    }
+
+    @PostMapping
+    public ResponseEntity<BloodTypeResponse> create(@RequestBody BloodTypeRequest request) {
+        return ResponseEntity.ok(bloodTypeService.createBloodType(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BloodTypeResponse> update(@PathVariable Integer id, @RequestBody BloodTypeRequest request) {
+        return ResponseEntity.ok(bloodTypeService.updateBloodType(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        bloodTypeService.deleteBloodType(id);
+        return ResponseEntity.noContent().build();
     }
 }

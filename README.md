@@ -5,8 +5,8 @@ This document outlines the main business flows in the Blood Donation Support Sys
 ## Table of Contents
 1. [User Management](#1-user-management)
 2. [Blood Type Management](#2-blood-type-management)
-3. [Health Checks](#3-health-checks)
-4. [Appointment Management](#4-appointment-management)
+3. [Appointment Management](#3-appointment-management)
+4. [Health Checks](#4-health-checks)
 5. [Blood Donation Process](#5-blood-donation-process)
 6. [Donor Search](#6-donor-search)
 7. [Reminder System](#7-reminder-system)
@@ -167,9 +167,110 @@ This document outlines the main business flows in the Blood Donation Support Sys
   }
   ```
 
-## 3. Health Checks
+## 3. Appointment Management
 
-### 3.1 Create Health Check
+### 3.1 Create Appointment
+- **Endpoint**: `POST /api/v1/appointment`
+- **Description**: Creates a new appointment for blood donation
+- **Authentication**: Required (Bearer token)
+- **Request Body**:
+  ```json
+  {
+    "userId": 1,
+    "appointmentDate": "2023-07-01T10:00:00",
+    "notes": "First time donor"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "OK",
+    "message": "Appointment created successfully",
+    "data": {
+      "appointmentId": 1,
+      "userId": 1,
+      "userName": "John Doe",
+      "appointmentDate": "2023-07-01T10:00:00",
+      "status": "SCHEDULED",
+      "notes": "First time donor",
+      "createdAt": "2023-06-15T14:30:00"
+    }
+  }
+  ```
+- **Business Rules**:
+    - Users can only create appointments for themselves unless they have admin/staff role
+    - Appointment date must be in the future
+    - Initial status is set to SCHEDULED
+
+### 3.2 Update Appointment Status
+- **Endpoint**: `PUT /api/v1/appointment/{appointmentId}/status`
+- **Description**: Updates the status of an appointment
+- **Authentication**: Required (Bearer token)
+- **Authorization**: Staff or Admin role required
+- **Request Body**:
+  ```json
+  {
+    "status": "COMPLETED"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "OK",
+    "message": "Appointment status updated successfully",
+    "data": {
+      "appointmentId": 1,
+      "userId": 1,
+      "userName": "John Doe",
+      "appointmentDate": "2023-07-01T10:00:00",
+      "status": "COMPLETED",
+      "notes": "First time donor",
+      "createdAt": "2023-06-15T14:30:00"
+    }
+  }
+  ```
+- **Business Rules**:
+    - Valid status transitions must be followed (e.g., SCHEDULED → COMPLETED or SCHEDULED → CANCELLED)
+
+### 3.3 Get User Appointments
+- **Endpoint**: `GET /api/v1/appointment/user/{userId}`
+- **Description**: Retrieves appointments for a specific user
+- **Authentication**: Required (Bearer token)
+- **Authorization**: User can only view their own appointments unless they have admin/staff role
+- **Query Parameters**:
+    - `page` (default: 0): Page number
+    - `size` (default: 10): Page size
+    - `status` (optional): Filter by appointment status
+- **Response**:
+  ```json
+  {
+    "status": "OK",
+    "message": "Appointments retrieved successfully",
+    "data": {
+      "content": [
+        {
+          "appointmentId": 1,
+          "userId": 1,
+          "userName": "John Doe",
+          "appointmentDate": "2023-07-01T10:00:00",
+          "status": "SCHEDULED",
+          "notes": "First time donor",
+          "createdAt": "2023-06-15T14:30:00"
+        }
+      ],
+      "page": {
+        "size": 10,
+        "number": 0,
+        "totalElements": 1,
+        "totalPages": 1
+      }
+    }
+  }
+  ```
+
+## 4. Health Checks
+
+### 4.1 Create Health Check
 - **Endpoint**: `POST /api/v1/health-check/appointment/{appointmentId}`
 - **Description**: Creates a health check record for a user based on an appointment
 - **Authentication**: Required (Bearer token)
@@ -208,7 +309,7 @@ This document outlines the main business flows in the Blood Donation Support Sys
     - If bloodTypeId is provided, the user's blood type will be updated
     - Health check records the user's eligibility for donation
 
-### 3.2 Get Health Checks by User ID
+### 4.2 Get Health Checks by User ID
 - **Endpoint**: `GET /api/v1/health-check/user/{userId}`
 - **Description**: Retrieves health check records for a specific user
 - **Authentication**: Required (Bearer token)
@@ -245,7 +346,7 @@ This document outlines the main business flows in the Blood Donation Support Sys
   }
   ```
 
-### 3.3 Get Health Check by Appointment ID
+### 4.3 Get Health Check by Appointment ID
 - **Endpoint**: `GET /api/v1/health-check/appointment/{appointmentId}`
 - **Description**: Retrieves the health check record for a specific appointment
 - **Authentication**: Required (Bearer token)
@@ -264,107 +365,6 @@ This document outlines the main business flows in the Blood Donation Support Sys
       "ineligibleReason": null,
       "bloodTypeId": 1,
       "bloodTypeName": "A_POS"
-    }
-  }
-  ```
-
-## 4. Appointment Management
-
-### 4.1 Create Appointment
-- **Endpoint**: `POST /api/v1/appointment`
-- **Description**: Creates a new appointment for blood donation
-- **Authentication**: Required (Bearer token)
-- **Request Body**:
-  ```json
-  {
-    "userId": 1,
-    "appointmentDate": "2023-07-01T10:00:00",
-    "notes": "First time donor"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "status": "OK",
-    "message": "Appointment created successfully",
-    "data": {
-      "appointmentId": 1,
-      "userId": 1,
-      "userName": "John Doe",
-      "appointmentDate": "2023-07-01T10:00:00",
-      "status": "SCHEDULED",
-      "notes": "First time donor",
-      "createdAt": "2023-06-15T14:30:00"
-    }
-  }
-  ```
-- **Business Rules**:
-    - Users can only create appointments for themselves unless they have admin/staff role
-    - Appointment date must be in the future
-    - Initial status is set to SCHEDULED
-
-### 4.2 Update Appointment Status
-- **Endpoint**: `PUT /api/v1/appointment/{appointmentId}/status`
-- **Description**: Updates the status of an appointment
-- **Authentication**: Required (Bearer token)
-- **Authorization**: Staff or Admin role required
-- **Request Body**:
-  ```json
-  {
-    "status": "COMPLETED"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "status": "OK",
-    "message": "Appointment status updated successfully",
-    "data": {
-      "appointmentId": 1,
-      "userId": 1,
-      "userName": "John Doe",
-      "appointmentDate": "2023-07-01T10:00:00",
-      "status": "COMPLETED",
-      "notes": "First time donor",
-      "createdAt": "2023-06-15T14:30:00"
-    }
-  }
-  ```
-- **Business Rules**:
-    - Valid status transitions must be followed (e.g., SCHEDULED → COMPLETED or SCHEDULED → CANCELLED)
-
-### 4.3 Get User Appointments
-- **Endpoint**: `GET /api/v1/appointment/user/{userId}`
-- **Description**: Retrieves appointments for a specific user
-- **Authentication**: Required (Bearer token)
-- **Authorization**: User can only view their own appointments unless they have admin/staff role
-- **Query Parameters**:
-    - `page` (default: 0): Page number
-    - `size` (default: 10): Page size
-    - `status` (optional): Filter by appointment status
-- **Response**:
-  ```json
-  {
-    "status": "OK",
-    "message": "Appointments retrieved successfully",
-    "data": {
-      "content": [
-        {
-          "appointmentId": 1,
-          "userId": 1,
-          "userName": "John Doe",
-          "appointmentDate": "2023-07-01T10:00:00",
-          "status": "SCHEDULED",
-          "notes": "First time donor",
-          "createdAt": "2023-06-15T14:30:00"
-        }
-      ],
-      "page": {
-        "size": 10,
-        "number": 0,
-        "totalElements": 1,
-        "totalPages": 1
-      }
     }
   }
   ```
