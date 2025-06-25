@@ -1,8 +1,10 @@
 package com.example.blooddonationsupportsystem.service.bloodComponent;
 
+import com.example.blooddonationsupportsystem.dtos.request.bloodComponent.BloodComponentRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.BloodComponentResponse;
 import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -27,5 +29,29 @@ public class BloodComponentService implements IBloodComponentService {
                 .toList();
 
         return new PageImpl<>(responseList, pageable, bloodPage.getTotalElements());
+    }
+
+    @Override
+    public void createBloodComponent(BloodComponentRequest request) {
+        BloodComponent component = new BloodComponent();
+        component.setComponentName(request.getComponentName());
+        bloodComponentRepository.save(component);
+    }
+
+    @Override
+    public void updateBloodComponent(Integer id, BloodComponentRequest request) {
+        BloodComponent existing = bloodComponentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("BloodComponent not found"));
+
+        existing.setComponentName(request.getComponentName());
+        bloodComponentRepository.save(existing);
+    }
+
+    @Override
+    public void deleteBloodComponent(Integer id) {
+        if (!bloodComponentRepository.existsById(id)) {
+            throw new EntityNotFoundException("BloodComponent not found");
+        }
+        bloodComponentRepository.deleteById(id);
     }
 }

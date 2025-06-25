@@ -10,5 +10,6 @@ import lombok.*;
 @Getter
 @Setter
 public class BloodTypeResponse {
+    private Integer id;
     private BloodTypeName typeName;
 }
