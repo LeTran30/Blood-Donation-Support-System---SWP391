@@ -35,4 +35,8 @@ public class BloodRequest {
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 }

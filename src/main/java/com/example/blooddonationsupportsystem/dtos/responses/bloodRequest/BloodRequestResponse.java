@@ -15,4 +15,5 @@ public class BloodRequestResponse {
     private String urgencyLevel;
     private String status;
     private String createdAt;
+    private Integer userId;
 }
