@@ -1,10 +1,7 @@
 package com.example.blooddonationsupportsystem.dtos.request.bloodDonation;
 
-import com.example.blooddonationsupportsystem.models.BloodType;
-import com.example.blooddonationsupportsystem.models.HealthCheck;
-import com.example.blooddonationsupportsystem.models.User;
+
 import com.example.blooddonationsupportsystem.utils.DonationStatus;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

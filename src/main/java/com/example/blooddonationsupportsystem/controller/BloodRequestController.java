@@ -1,6 +1,6 @@
 package com.example.blooddonationsupportsystem.controller;
 
-import com.example.blooddonationsupportsystem.dtos.request.bloodrequest.BloodRequestAllocationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.bloodRequest.BloodRequestAllocationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.service.bloodRequest.IBloodRequestService;
 import jakarta.validation.Valid;

@@ -1,12 +1,8 @@
 package com.example.blooddonationsupportsystem.dtos.responses.bloodDonation;
 
-import com.example.blooddonationsupportsystem.dtos.responses.user.UserResponse;
-import com.example.blooddonationsupportsystem.models.BloodType;
-import com.example.blooddonationsupportsystem.models.HealthCheck;
-import com.example.blooddonationsupportsystem.models.User;
+
 import com.example.blooddonationsupportsystem.utils.DonationStatus;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+
 import lombok.*;
 
 import java.time.LocalDate;

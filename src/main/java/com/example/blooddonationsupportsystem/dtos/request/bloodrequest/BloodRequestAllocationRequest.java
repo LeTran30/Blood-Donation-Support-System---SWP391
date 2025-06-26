@@ -1,4 +1,4 @@
-package com.example.blooddonationsupportsystem.dtos.request.bloodrequest;
+package com.example.blooddonationsupportsystem.dtos.request.bloodRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -24,13 +24,14 @@ public class BloodRequestAllocationRequest {
     @NotNull(message = "Urgency Level id must not be null")
     private String UrgencyLevel;
 
+    private Long createdById;
+
     @Schema(
-            description = "Map of Inventory ID to Quantity allocation",
-            example = "{\"1\": 10, \"2\": 5}"
+        description = "Map of Inventory ID to Quantity allocation",
+        example = "{\"1\": 10, \"2\": 5}"
     )
     @NotEmpty(message = "Allocations must not be empty")
     private Map<@NotNull(message = "Inventory ID cannot be null") Integer,
             @NotNull(message = "Quantity cannot be null")
             @Min(value = 1, message = "Quantity must be at least 1") Integer> allocations;
-
 }

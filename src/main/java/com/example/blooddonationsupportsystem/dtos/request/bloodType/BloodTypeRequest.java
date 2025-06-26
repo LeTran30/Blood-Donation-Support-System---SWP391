@@ -2,7 +2,6 @@ package com.example.blooddonationsupportsystem.dtos.request.bloodType;
 
 import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data

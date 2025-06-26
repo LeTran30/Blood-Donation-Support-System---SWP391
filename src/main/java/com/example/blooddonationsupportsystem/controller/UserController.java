@@ -2,7 +2,6 @@ package com.example.blooddonationsupportsystem.controller;
 
 
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
-import com.example.blooddonationsupportsystem.dtos.responses.user.ListUserResponse;
 import com.example.blooddonationsupportsystem.dtos.request.user.UpdateUserRequest;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;

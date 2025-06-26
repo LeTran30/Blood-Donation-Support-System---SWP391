@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.dtos.request.healthCheck;
 
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

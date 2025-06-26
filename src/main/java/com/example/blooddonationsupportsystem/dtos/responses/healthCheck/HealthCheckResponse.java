@@ -1,9 +1,7 @@
 package com.example.blooddonationsupportsystem.dtos.responses.healthCheck;
 
-import com.example.blooddonationsupportsystem.models.BloodComponent;
-import com.example.blooddonationsupportsystem.models.BloodType;
+
 import com.example.blooddonationsupportsystem.utils.BloodTypeName;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

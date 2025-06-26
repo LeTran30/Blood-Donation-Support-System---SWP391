@@ -1,7 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.request.inventory;
 
-import com.example.blooddonationsupportsystem.models.BloodComponent;
-import com.example.blooddonationsupportsystem.models.BloodType;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
