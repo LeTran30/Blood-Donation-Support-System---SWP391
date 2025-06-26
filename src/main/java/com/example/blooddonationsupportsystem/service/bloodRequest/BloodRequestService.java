@@ -1,6 +1,6 @@
 package com.example.blooddonationsupportsystem.service.bloodRequest;
 
-import com.example.blooddonationsupportsystem.dtos.request.bloodrequest.BloodRequestAllocationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.bloodRequest.BloodRequestAllocationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodRequest.BloodRequestResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.inventoryAllocation.InventoryAllocationResponse;
@@ -12,11 +12,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -32,6 +32,7 @@ public class BloodRequestService implements IBloodRequestService {
     private final InventoryRepository inventoryRepository;
     private final BloodComponentRepository bloodComponentRepository;
     private final BloodTypeRepository bloodTypeRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -45,7 +46,12 @@ public class BloodRequestService implements IBloodRequestService {
                 .orElseThrow(() -> new RuntimeException("Blood type not found"));
         BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
                 .orElseThrow(() -> new RuntimeException("Blood component not found"));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+
+        bloodRequest.setCreatedBy(user);
         bloodRequest.setBloodType(bloodType);
         bloodRequest.setComponent(bloodComponent);
         bloodRequest.setStatus(RequestStatus.PENDING);
@@ -55,6 +61,8 @@ public class BloodRequestService implements IBloodRequestService {
         BloodRequestResponse response = modelMapper.map(bloodRequest, BloodRequestResponse.class);
         if (bloodRequest.getCreatedAt() != null) {
             response.setCreatedAt(bloodRequest.getCreatedAt().toLocalDateTime().toString());
+            response.setUserId(bloodRequest.getCreatedBy().getId());
+
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseObject.builder()
@@ -70,9 +78,14 @@ public class BloodRequestService implements IBloodRequestService {
         Page<BloodRequest> requests = bloodRequestRepository.findAll(pageable);
 
         List<BloodRequestResponse> responses = requests.getContent().stream()
-                .map(req -> modelMapper.map(req, BloodRequestResponse.class))
+                .map(req -> {
+                    BloodRequestResponse res = modelMapper.map(req, BloodRequestResponse.class);
+                    if (req.getCreatedBy() != null) {
+                        res.setUserId(req.getCreatedBy().getId());
+                    }
+                    return res;
+                })
                 .toList();
-
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)

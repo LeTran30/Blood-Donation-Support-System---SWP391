@@ -1,4 +1,4 @@
-package com.example.blooddonationsupportsystem.dtos.request.bloodrequest;
+package com.example.blooddonationsupportsystem.dtos.request.bloodRequest;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
