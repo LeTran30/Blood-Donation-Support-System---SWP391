@@ -4,6 +4,8 @@ import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "blood_components")
 @Data//toString
@@ -20,4 +22,8 @@ public class BloodComponent {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private BloodComponentName componentName;
+
+    @ManyToMany(mappedBy = "components")
+    private Set<BloodType> bloodTypes;
+
 }

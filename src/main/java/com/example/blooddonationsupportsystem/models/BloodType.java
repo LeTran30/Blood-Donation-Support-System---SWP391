@@ -4,6 +4,8 @@ import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "blood_types")
@@ -21,4 +23,12 @@ public class BloodType extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
     private BloodTypeName typeName;
+
+    @ManyToMany
+    @JoinTable(
+            name = "blood_type_components",
+            joinColumns = @JoinColumn(name = "blood_type_id"),
+            inverseJoinColumns = @JoinColumn(name = "component_id")
+    )
+    private Set<BloodComponent> components;
 }
