@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -24,11 +25,11 @@ public class BloodType extends BaseEntity{
     @Column(nullable = false, unique = true)
     private BloodTypeName typeName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "blood_type_components",
-            joinColumns = @JoinColumn(name = "blood_type_id"),
+            name = "blood_type_components", // phải đúng tên bảng
+            joinColumns = @JoinColumn(name = "blood_type_id"), // đúng tên cột trong bảng
             inverseJoinColumns = @JoinColumn(name = "component_id")
     )
-    private Set<BloodComponent> components;
+    private Set<BloodComponent> components = new HashSet<>();
 }

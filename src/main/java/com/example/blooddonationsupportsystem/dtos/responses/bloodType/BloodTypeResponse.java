@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.Set;
 
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,5 +17,4 @@ public class BloodTypeResponse {
     private Integer id;
     private BloodTypeName typeName;
     private Set<BloodComponentResponse> components;
-
 }

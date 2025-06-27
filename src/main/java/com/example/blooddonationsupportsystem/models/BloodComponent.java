@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -14,7 +15,9 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BloodComponent {
+    @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer componentId;
@@ -24,6 +27,5 @@ public class BloodComponent {
     private BloodComponentName componentName;
 
     @ManyToMany(mappedBy = "components")
-    private Set<BloodType> bloodTypes;
-
+    private Set<BloodType> bloodTypes = new HashSet<>();
 }

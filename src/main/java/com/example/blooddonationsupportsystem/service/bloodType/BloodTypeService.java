@@ -6,87 +6,79 @@ import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodType
 import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
+import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BloodTypeService implements IBloodTypeService {
+
     private final BloodComponentRepository bloodComponentRepository;
     private final BloodTypeRepository bloodTypeRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<BloodTypeResponse> getAllBloodTypes(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BloodType> bloodPage = bloodTypeRepository.findAll(pageable);
+        Page<BloodType> bloodPage = bloodTypeRepository.findAllWithComponents(pageable);
 
         List<BloodTypeResponse> responseList = bloodPage.getContent().stream()
-                .map(this::mapToResponse)
-                .toList();
+                .map(bt -> {
+                    Set<BloodComponent> safeCopy = new HashSet<>(bt.getComponents()); // 🔥 Rất quan trọng!
+                    return mapToResponse(bt, safeCopy);
+                })
+                .collect(Collectors.toList());
+
 
         return new PageImpl<>(responseList, pageable, bloodPage.getTotalElements());
     }
 
     @Override
+    @Transactional
     public BloodTypeResponse createBloodType(BloodTypeRequest request) {
-        BloodType bloodType = new BloodType();
-        bloodType.setTypeName(request.getTypeName());
+        BloodType bloodType = BloodType.builder()
+                .typeName(request.getTypeName())
+                .build();
 
-        if (request.getComponentIds() != null && !request.getComponentIds().isEmpty()) {
-            List<BloodComponent> components = bloodComponentRepository.findAllById(request.getComponentIds());
-            bloodType.setComponents(new HashSet<>(components));
-        }
+        Set<BloodComponent> components = fetchComponentsByIds(request.getComponentIds());
+        bloodType.setComponents(components);
 
-        bloodType = bloodTypeRepository.save(bloodType);
-
-        return mapToResponse(bloodType);
+        return mapToResponse(bloodTypeRepository.save(bloodType), components);
     }
 
-
     @Override
+    @Transactional
     public BloodTypeResponse updateBloodType(Integer id, BloodTypeRequest request) {
         BloodType bloodType = bloodTypeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("BloodType not found"));
 
         bloodType.setTypeName(request.getTypeName());
+        Set<BloodComponent> components = fetchComponentsByIds(request.getComponentIds());
+        bloodType.setComponents(components);
 
-        if (request.getComponentIds() != null) {
-            List<BloodComponent> components = bloodComponentRepository.findAllById(request.getComponentIds());
-            bloodType.setComponents(new HashSet<>(components));
-        }
-
-        bloodType = bloodTypeRepository.save(bloodType);
-
-        return mapToResponse(bloodType);
+        return mapToResponse(bloodTypeRepository.save(bloodType), components);
     }
-
 
     @Override
+    @Transactional
     public void deleteBloodType(Integer id) {
-        if (!bloodTypeRepository.existsById(id)) {
-            throw new EntityNotFoundException("BloodType not found");
-        }
-        bloodTypeRepository.deleteById(id);
+        BloodType bloodType = bloodTypeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + id));
+        bloodTypeRepository.delete(bloodType);
     }
 
-    private BloodTypeResponse mapToResponse(BloodType bloodType) {
-        Set<BloodComponentResponse> componentResponses = bloodType.getComponents().stream()
-                .map(component -> BloodComponentResponse.builder()
-                        .componentId(component.getComponentId())
-                        .componentName(component.getComponentName())
+    private BloodTypeResponse mapToResponse(BloodType bloodType, Set<BloodComponent> components) {
+        Set<BloodComponentResponse> componentResponses = components.stream()
+                .map(c -> BloodComponentResponse.builder()
+                        .componentId(c.getComponentId())
+                        .componentName(c.getComponentName())
                         .build())
                 .collect(Collectors.toSet());
 
@@ -95,6 +87,41 @@ public class BloodTypeService implements IBloodTypeService {
                 .typeName(bloodType.getTypeName())
                 .components(componentResponses)
                 .build();
+    }
+
+    private Set<BloodComponent> fetchComponentsByIds(Collection<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return new HashSet<>();
+
+        List<BloodComponent> components = bloodComponentRepository.findAllById(ids);
+        if (components.isEmpty()) {
+            throw new EntityNotFoundException("No valid BloodComponent found for provided IDs.");
+        }
+        return new HashSet<>(components);
+    }
+
+    @Transactional
+    @Override
+    public BloodTypeResponse assignComponentsToBloodType(Integer bloodTypeId, Collection<Integer> componentIds) {
+        BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
+                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + bloodTypeId));
+
+        Set<BloodComponent> components = fetchComponentsByIds(componentIds);
+        bloodType.setComponents(components);
+
+        return mapToResponse(bloodTypeRepository.save(bloodType), components);
+    }
+
+    @Transactional
+    @Override
+    public BloodTypeResponse removeComponentFromBloodType(Integer bloodTypeId, Integer componentId) {
+        BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
+                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + bloodTypeId));
+
+        Set<BloodComponent> components = bloodType.getComponents();
+        components.removeIf(c -> c.getComponentId().equals(componentId));
+        bloodType.setComponents(components);
+
+        return mapToResponse(bloodTypeRepository.save(bloodType), components);
     }
 
 }
