@@ -19,4 +19,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("An error occurred: " + ex.getMessage());
     }
+
+    @ExceptionHandler({ AccessDeniedException.class, SecurityException.class })
+    public ResponseEntity<String> handleAccessDenied(Exception ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: " + ex.getMessage());
+}
+
 }
