@@ -60,6 +60,11 @@ public class HealthCheckService implements IHealthCheckService {
                 if (bloodType.isPresent()) {
                     user.setBloodType(bloodType.get());
                     userRepository.save(user);
+                } else {
+                    return ResponseEntity.badRequest().body(ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Blood type with ID " + request.getBloodTypeId() + " not found")
+                            .build());
                 }
             }
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 @Service
@@ -49,41 +50,46 @@ public class DistanceSearchService implements IDistanceSearchService {
             );
         }
 
-        // 3. Lấy tất cả user khác có nhóm máu phù hợp
-        List<User> potentialDonors = userRepository.findAllByBloodTypeId(bloodType.getBloodTypeId());
+        // 3. Lấy tất cả user có bloodTypeId khớp, bỏ qua bản thân requester
+        List<User> matchedUsers = userRepository.findAllByBloodTypeId(bloodType.getBloodTypeId());
 
-        List<DistanceSearchResponse> matchedResults = new ArrayList<>();
+        List<DistanceSearchResponse> results = new ArrayList<>();
 
-        for (User donor : potentialDonors) {
-            if (donor.getId().equals(requester.getId()) || donor.getLatitude() == null || donor.getLongitude() == null) continue;
+        for (User target : matchedUsers) {
+            if (target.getId().equals(requester.getId())) continue;
+            if (target.getLatitude() == null || target.getLongitude() == null) continue;
 
-            double distance = calculateDistance(
+            double distanceKM = calculateDistance(
                     request.getLatitude(), request.getLongitude(),
-                    donor.getLatitude(), donor.getLongitude()
+                    target.getLatitude(), target.getLongitude()
             );
 
-            if (distance <= request.getDistanceKM()) {
-                // Save the search result
-                DistanceSearch record = DistanceSearch.builder()
-                        .user(requester)
-                        .targetUser(donor)
-                        .bloodType(bloodType)
-                        .distanceKM(distance)
-                        .searchTime(Timestamp.valueOf(LocalDateTime.now()))
-                        .build();
-                distanceSearchRepository.save(record);
+            // Ghi nhận tìm kiếm
+            DistanceSearch record = DistanceSearch.builder()
+                    .user(requester)
+                    .targetUser(target)
+                    .bloodType(bloodType)
+                    .distanceKM(distanceKM)
+                    .searchTime(Timestamp.valueOf(LocalDateTime.now()))
+                    .build();
 
-                DistanceSearchResponse response = modelMapper.map(record, DistanceSearchResponse.class);
-                response.setTargetUserId(donor.getId());
-                response.setTargetUsername(donor.getEmail()); // hoặc tên nếu có
-                matchedResults.add(response);
-            }
+            distanceSearchRepository.save(record);
+
+            DistanceSearchResponse response = modelMapper.map(record, DistanceSearchResponse.class);
+            response.setTargetUserId(target.getId());
+            response.setTargetUsername(target.getEmail()); // có thể thay bằng tên
+            response.setDistanceKM(distanceKM);
+
+            results.add(response);
         }
+
+        // Sắp xếp kết quả tăng dần theo khoảng cách
+        results.sort(Comparator.comparingDouble(DistanceSearchResponse::getDistanceKM));
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Nearby donors found")
-                .data(matchedResults)
+                .message("Nearby users found")
+                .data(results)
                 .build());
     }
 

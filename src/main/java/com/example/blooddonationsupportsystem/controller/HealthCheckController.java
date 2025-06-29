@@ -23,7 +23,7 @@ public class HealthCheckController {
 
     private final IHealthCheckService healthCheckService;
 
-    @PostMapping("/{appointmentId}")
+    @PostMapping
     public ResponseEntity<?> submitHealthCheck(
             @Valid @RequestBody HealthCheckRequest healthCheckRequest,
             BindingResult result

@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.Blood
 import com.example.blooddonationsupportsystem.models.BloodDonation;
 import com.example.blooddonationsupportsystem.service.bloodDonation.IBloodDonationService;
 import com.example.blooddonationsupportsystem.service.inventory.IInventoryService;
+import com.example.blooddonationsupportsystem.utils.DonationStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -98,5 +99,23 @@ public class BloodDonationController {
                             .build()
             );
         }
+    }
+
+    @PutMapping("/donations/{id}/status")
+    public ResponseEntity<BloodDonationResponse> updateStatus(
+            @PathVariable int id,
+            @RequestParam DonationStatus status
+    ) {
+        BloodDonation updated = bloodDonationService.updateDonationStatus(id, status);
+        BloodDonationResponse response = BloodDonationResponse.builder()
+                .donationId(updated.getDonationId())
+                .user(updated.getUser().getId())
+                .bloodType(updated.getBloodType().getBloodTypeId())
+                .donationDate(updated.getDonationDate())
+                .volumeMl(updated.getVolumeMl())
+                .status(updated.getStatus())
+                .healthCheck(updated.getHealthCheck().getId())
+                .build();
+        return ResponseEntity.ok(response);
     }
 }

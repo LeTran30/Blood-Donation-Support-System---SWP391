@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.request.bloodDonation.BloodDo
 import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.BloodDonationResponse;
 import com.example.blooddonationsupportsystem.models.*;
 import com.example.blooddonationsupportsystem.repositories.*;
+import com.example.blooddonationsupportsystem.utils.DonationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -83,5 +84,14 @@ public class BloodDonationService implements IBloodDonationService {
                 .build();
         return bloodDonationRepository.save(bloodDonation);
 
+    }
+
+    @Override
+    public BloodDonation updateDonationStatus(int donationId, DonationStatus newStatus) {
+        BloodDonation donation = bloodDonationRepository.findById(donationId)
+                .orElseThrow(() -> new IllegalArgumentException("Blood donation not found"));
+
+        donation.setStatus(newStatus);
+        return bloodDonationRepository.save(donation);
     }
 }

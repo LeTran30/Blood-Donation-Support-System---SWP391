@@ -24,8 +24,4 @@
 
         @NotNull(message = "Longitude must not be null")
         private Double longitude;
-
-        @NotNull(message = "DistanceKM must not be null")
-        @DecimalMin(value = "0.1", inclusive = true, message = "DistanceKM must be greater than 0")
-        private Double distanceKM;
     }
