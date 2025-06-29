@@ -36,5 +36,5 @@ public class UserDetailResponse {
 
     private LocalDate dateOfBirth;
 
-    private Integer bloodType;
+    private Integer bloodTypeId;
 }
