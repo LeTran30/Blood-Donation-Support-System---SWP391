@@ -31,6 +31,11 @@ public class AuthenticationController {
         return userService.register(registerRequest);
     }
 
+    @PostMapping("/staff")
+    public ResponseEntity<RegisterResponse> registerStaff(@Valid @RequestBody RegisterRequest registerRequest) {
+        return userService.registerStaff(registerRequest);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody Authentication authentication) {
         return userService.login(authentication);

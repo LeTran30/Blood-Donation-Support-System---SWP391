@@ -132,22 +132,4 @@ public class AppointmentController {
     ) {
         return appointmentService.getAppointmentsWithFilters(from, to, status, userId, page, size);
     }
-
-
-    @PreAuthorize("hasAuthority('staff:create')")
-    @PostMapping("/appointment/{appointmentId}/health-check")
-    public ResponseEntity<?> createHealthCheck(
-            @PathVariable Integer appointmentId,
-            @Valid @RequestBody HealthCheckRequest request
-    ) {
-        return healthCheckService.createHealthCheck(appointmentId, request);
-    }
-
-    @PreAuthorize("hasAnyAuthority('staff:read', 'member:read')")
-    @GetMapping("/appointment/{appointmentId}/health-check")
-    public ResponseEntity<?> getHealthCheckByAppointment(@PathVariable Integer appointmentId) {
-        return healthCheckService.getByAppointmentId(appointmentId);
-    }
-
-
 }

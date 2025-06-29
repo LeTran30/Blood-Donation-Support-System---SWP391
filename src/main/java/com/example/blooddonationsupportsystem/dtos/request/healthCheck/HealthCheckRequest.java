@@ -13,6 +13,9 @@ import lombok.*;
 @Getter
 @Setter
 public class HealthCheckRequest {
+    @NotNull(message = "Application id must not be null")
+    private Integer appointmentId;
+
     @NotNull(message = "Pulse must not be null")
     @Min(value = 30, message = "Pulse must be at least 30")
     @Max(value = 200, message = "Pulse must be no more than 200")

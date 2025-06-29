@@ -35,4 +35,6 @@ public interface IUserService {
     ResponseEntity<?> updateUser(Integer id, UpdateUserRequest request);
 
     ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm, int page, int size);
+
+    ResponseEntity<RegisterResponse> registerStaff(@Valid RegisterRequest registerRequest);
 }

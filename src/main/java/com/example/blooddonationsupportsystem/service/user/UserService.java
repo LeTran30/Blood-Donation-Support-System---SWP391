@@ -479,6 +479,44 @@ public class UserService implements IUserService {
         }
     }
 
+    @Override
+    public ResponseEntity<RegisterResponse> registerStaff(RegisterRequest registerRequest) {
+        try {
+            if (userRepository.existsByEmail(registerRequest.getEmail())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        RegisterResponse.builder()
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .message("Email already in use")
+                                .build()
+                );
+            }
+
+            User newUser = User.builder()
+                    .email(registerRequest.getEmail())
+                    .password(passwordEncoder.encode(registerRequest.getPassword()))
+                    .role(Role.STAFF)
+                    .fullName(registerRequest.getFullName())
+                    .phoneNumber(registerRequest.getPhoneNumber())
+                    .status(true)
+                    .build();
+
+            userRepository.save(newUser);
+            return ResponseEntity.ok(RegisterResponse.builder()
+                    .status(HttpStatus.OK.value())
+                    .message("User registered successfully")
+                    .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    RegisterResponse.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .message("Registration failed")
+                            .build()
+            );
+        }
+    }
+
 
     private void saveToken(User user, String jwtToken, String refreshToken) {
         Token token = Token.builder()

@@ -23,9 +23,8 @@ public class HealthCheckController {
 
     private final IHealthCheckService healthCheckService;
 
-    @PostMapping("/{userId}")
+    @PostMapping("/{appointmentId}")
     public ResponseEntity<?> submitHealthCheck(
-            @PathVariable Integer userId,
             @Valid @RequestBody HealthCheckRequest healthCheckRequest,
             BindingResult result
     ) {
@@ -41,7 +40,7 @@ public class HealthCheckController {
                             .build()
             );
         }
-        return healthCheckService.createHealthCheck(userId, healthCheckRequest);
+        return healthCheckService.createHealthCheck(healthCheckRequest);
     }
 
     @GetMapping("/users/{userId}/health-checks")

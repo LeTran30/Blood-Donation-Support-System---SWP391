@@ -38,10 +38,10 @@ public class HealthCheckService implements IHealthCheckService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> createHealthCheck(Integer appointmentId, HealthCheckRequest request) {
+    public ResponseEntity<?> createHealthCheck(HealthCheckRequest request) {
         try {
             // Find appointment
-            Appointment appointment = appointmentRepository.findById(appointmentId)
+            Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                     .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
             // Check status
