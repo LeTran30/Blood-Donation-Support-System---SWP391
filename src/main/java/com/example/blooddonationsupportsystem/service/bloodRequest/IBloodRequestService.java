@@ -14,4 +14,6 @@ public interface IBloodRequestService {
 
     @Transactional
     ResponseEntity<?> allocateInventory(Integer requestId);
+
+    ResponseEntity<?> deleteRequest(Integer requestId);
 }

@@ -70,4 +70,11 @@ public class BloodRequestController {
 
         return bloodRequestService.allocateInventory(requestId);
     }
+
+    @DeleteMapping("/{requestId}")
+    @PreAuthorize("true")
+    public ResponseEntity<?> deleteBloodRequest(@PathVariable Integer requestId) {
+        return bloodRequestService.deleteRequest(requestId);
+    }
+
 }

@@ -2,7 +2,6 @@ package com.example.blooddonationsupportsystem.utils;
 
 public enum RequestStatus {
     PENDING,
-    APPROVED,
-    REJECTED,
+    CANCELLED,
     ALLOCATED, FULFILLED
 }

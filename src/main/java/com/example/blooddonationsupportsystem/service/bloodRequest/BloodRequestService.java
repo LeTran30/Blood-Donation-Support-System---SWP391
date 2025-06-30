@@ -195,6 +195,36 @@ public class BloodRequestService implements IBloodRequestService {
                 .build());
     }
 
+    @Override
+    public ResponseEntity<?> deleteRequest(Integer requestId) {
+        Optional<BloodRequest> requestOpt = bloodRequestRepository.findById(Long.valueOf(requestId));
+        if (requestOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Blood request not found")
+                            .build());
+        }
+
+        BloodRequest bloodRequest = requestOpt.get();
+
+        if (bloodRequest.getStatus() == RequestStatus.CANCELLED) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Blood request is already cancelled")
+                            .build());
+        }
+
+        bloodRequest.setStatus(RequestStatus.CANCELLED);
+        bloodRequestRepository.save(bloodRequest);
+
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Blood request cancelled (soft deleted) successfully")
+                .build());
+    }
+
     private InventoryAllocationResponse mapToInventoryAllocationResponse(BloodRequestInventory allocation) {
         Inventory inventory = allocation.getInventory();
         return InventoryAllocationResponse.builder()
