@@ -24,8 +24,7 @@ public class ReminderRequest {
     @FutureOrPresent(message = "Next date must be today or in the future")
     private LocalDate nextDate;
 
-    @NotBlank(message = "Reminder type is required")
-    @Size(max = 100, message = "Reminder type must be less than or equal to 100 characters")
+    @NotNull(message = "Reminder type is required")
     private ReminderType reminderType;
 
     @NotBlank(message = "Message is required")
