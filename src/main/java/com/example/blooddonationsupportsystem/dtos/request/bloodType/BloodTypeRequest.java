@@ -13,7 +13,6 @@ import java.util.Set;
 @Getter
 @Setter
 public class BloodTypeRequest {
-    private Integer bloodTypeId;
     @NotEmpty
     private BloodTypeName typeName;
     private Set<Integer> componentIds; // List of IDs of BloodComponent

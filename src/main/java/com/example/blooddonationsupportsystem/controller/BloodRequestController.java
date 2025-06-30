@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class BloodRequestController {
     private final IBloodRequestService bloodRequestService;
 
     @PostMapping
+    @PreAuthorize("true")
     public ResponseEntity<?> createBloodRequest(
             @Valid @RequestBody BloodRequestAllocationRequest request,
             BindingResult result
@@ -41,6 +43,7 @@ public class BloodRequestController {
     }
 
     @GetMapping
+    @PreAuthorize("true")
     public ResponseEntity<?> getAllBloodRequests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -50,6 +53,7 @@ public class BloodRequestController {
     }
 
     @GetMapping("/{requestId}/inventory")
+    @PreAuthorize("true")
     public ResponseEntity<?> getInventoryForRequest(
             @PathVariable Integer requestId,
             @RequestParam(defaultValue = "0") int page,
@@ -59,6 +63,7 @@ public class BloodRequestController {
     }
 
     @PutMapping("/{requestId}/allocate")
+    @PreAuthorize("true")
     public ResponseEntity<?> allocateInventoryToRequest(
             @PathVariable Integer requestId
     ) {

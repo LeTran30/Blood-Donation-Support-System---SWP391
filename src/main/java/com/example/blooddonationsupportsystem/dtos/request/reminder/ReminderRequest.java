@@ -15,8 +15,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class ReminderRequest {
-    private Integer reminderId;
-
     @NotNull(message = "User ID is required")
     private Integer userId;
 

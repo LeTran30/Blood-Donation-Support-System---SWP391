@@ -82,7 +82,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void createNextDonationReminder(Integer userId, LocalDate lastDonationDate) {
         LocalDate nextDate = lastDonationDate.plusMonths(3);
 
@@ -98,7 +98,7 @@ public class ReminderService implements IReminderService {
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public ResponseEntity<?> sendReminder(ReminderRequest request) {
         Optional<User> user = userRepository.findById(request.getUserId());
         if (user.isEmpty()) {

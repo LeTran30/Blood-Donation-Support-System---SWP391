@@ -14,10 +14,10 @@ import lombok.*;
 @Setter
 public class InventoryRequest {
     @NotNull
-    private Integer bloodType;
+    private Integer bloodTypeId;
 
     @NotNull
-    private Integer bloodComponent;
+    private Integer bloodComponentId;
 
 
     @Min(value = 1, message = "quantity must be greater than or equal to 0")
