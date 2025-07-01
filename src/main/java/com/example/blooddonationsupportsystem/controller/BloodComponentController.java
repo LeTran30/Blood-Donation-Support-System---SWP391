@@ -59,12 +59,12 @@ public class BloodComponentController {
             );
         }
 
-        bloodComponentService.createBloodComponent(request);
+        BloodComponentResponse response = bloodComponentService.createBloodComponent(request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Created blood component successfully")
-                        //.data(response)
+                        .data(response)
                         .build()
         );
     }
@@ -87,12 +87,12 @@ public class BloodComponentController {
             );
         }
 
-        bloodComponentService.updateBloodComponent(id, request);
+        BloodComponentResponse response = bloodComponentService.updateBloodComponent(id, request);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Updated blood component successfully")
-//                        .data(response)
+                        .data(response)
                         .build()
         );
     }

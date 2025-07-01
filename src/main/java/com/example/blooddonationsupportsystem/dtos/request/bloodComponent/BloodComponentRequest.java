@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.dtos.request.bloodComponent;
 
-import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -12,6 +11,6 @@ import lombok.*;
 @Setter
 public class BloodComponentRequest {
     @NotNull(message = "Component name must not be null")
-    private BloodComponentName componentName;
+    private String componentName;
 
 }

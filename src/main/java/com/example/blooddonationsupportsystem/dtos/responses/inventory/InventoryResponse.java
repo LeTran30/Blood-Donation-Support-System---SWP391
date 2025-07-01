@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.dtos.responses.inventory;
 
-import com.example.blooddonationsupportsystem.models.BloodType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -13,7 +12,8 @@ import java.time.LocalDateTime;
 @Setter
 public class InventoryResponse {
     private Integer id;
-    private Integer bloodType;
+    private Integer bloodTypeId;
+    private Integer bloodComponentId;
     private Integer quantity;
     private LocalDateTime lastUpdated;
 }

@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.inventory.Inventory
 import com.example.blooddonationsupportsystem.service.inventory.IInventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -39,10 +40,11 @@ public class InventoryController {
                             .build()
             );
         }
-        inventoryService.createInventory(inventoryRequest);
+        InventoryResponse response = inventoryService.createInventory(inventoryRequest);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
+                        .data(response)
                         .message("Successfully created inventory")
                         .build()
         );
@@ -67,10 +69,11 @@ public class InventoryController {
                             .build()
             );
         }
-        inventoryService.updateInventory(id, inventoryRequest);
+        InventoryResponse response = inventoryService.updateInventory(id, inventoryRequest);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
+                        .data(response)
                         .message("Successfully updated inventory")
                         .build()
         );
@@ -87,11 +90,12 @@ public class InventoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        Page<InventoryResponse> response = inventoryService.getAllInventory(page, size);
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
                         .message("Successfully get all inventory")
-                        .data(inventoryService.getAllInventory(page, size))
+                        .data(response)
                         .build()
         );
     }
