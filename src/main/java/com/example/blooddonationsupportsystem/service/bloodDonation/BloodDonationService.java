@@ -2,6 +2,7 @@ package com.example.blooddonationsupportsystem.service.bloodDonation;
 
 import com.example.blooddonationsupportsystem.dtos.request.bloodDonation.BloodDonationRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.BloodDonationResponse;
+import com.example.blooddonationsupportsystem.exceptions.EntityNotFoundException;
 import com.example.blooddonationsupportsystem.models.*;
 import com.example.blooddonationsupportsystem.repositories.*;
 import com.example.blooddonationsupportsystem.utils.DonationStatus;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,9 +46,25 @@ public class BloodDonationService implements IBloodDonationService {
 
     @Override
     public Page<BloodDonationResponse> getAllBloodDonations(int page, int size) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // nếu bạn dùng email làm username trong UserDetails
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Integer currentUserId = user.getId();
+        // Lấy danh sách quyền (roles)
+        boolean isAdminOrStaff = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ROLE_STAFF"));
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<BloodDonation> bloodPage = bloodDonationRepository.findAll(pageable);
-        List<BloodDonationResponse> bloodDonationResponses = bloodDonationRepository.findAll().stream()
+        Page<BloodDonation> bloodPage;
+
+        if (isAdminOrStaff) {
+            bloodPage = bloodDonationRepository.findAll(pageable);
+        } else {
+            bloodPage = bloodDonationRepository.findByUserId(currentUserId, pageable);
+        }
+
+        List<BloodDonationResponse> bloodDonationResponses = bloodPage.stream()
                 .map(donation -> BloodDonationResponse.builder()
                         .donationId(donation.getDonationId())
                         .user(donation.getUser().getId())
@@ -56,8 +75,10 @@ public class BloodDonationService implements IBloodDonationService {
                         .healthCheck(donation.getHealthCheck().getId())
                         .build())
                 .toList();
+
         return new PageImpl<>(bloodDonationResponses, pageable, bloodPage.getTotalElements());
     }
+
 
     @Override
     public BloodDonation addBloodDonation(BloodDonationRequest bloodDonationRequest) {

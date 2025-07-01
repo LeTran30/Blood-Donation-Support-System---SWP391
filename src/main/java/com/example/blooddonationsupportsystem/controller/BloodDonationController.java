@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.request.bloodDonation.BloodDo
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodDonation.BloodDonationResponse;
 import com.example.blooddonationsupportsystem.models.BloodDonation;
+import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.bloodDonation.IBloodDonationService;
 import com.example.blooddonationsupportsystem.service.inventory.IInventoryService;
 import com.example.blooddonationsupportsystem.utils.DonationStatus;
@@ -27,6 +28,7 @@ import java.util.Objects;
 public class BloodDonationController {
     private final IBloodDonationService bloodDonationService;
     private final IInventoryService inventoryService;
+    private final UserRepository userRepository;
 
     @GetMapping()
     public ResponseEntity<?> getBloodDonation(
