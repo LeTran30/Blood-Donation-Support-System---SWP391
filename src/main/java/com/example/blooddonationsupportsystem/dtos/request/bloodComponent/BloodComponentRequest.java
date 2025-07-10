@@ -11,7 +11,6 @@ import lombok.*;
 @Getter
 @Setter
 public class BloodComponentRequest {
-    private Integer componentId;
     @NotNull(message = "Component name must not be null")
     private BloodComponentName componentName;
 

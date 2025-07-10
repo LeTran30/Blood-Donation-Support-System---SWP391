@@ -1,5 +1,6 @@
 package com.example.blooddonationsupportsystem.exceptions;
 
+import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,12 +52,24 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ResponseObject.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message("Validation failed")
+                        .data(errors)
+                        .build()
+        );
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex) {
         return build(HttpStatus.BAD_REQUEST, "Validation failed: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<?> handleEnumErrors(MethodArgumentTypeMismatchException ex) {
+        String message = String.format("Invalid value for parameter '%s': '%s'", ex.getName(), ex.getValue());
+        return build(HttpStatus.BAD_REQUEST, message);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -74,11 +88,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred: " + ex.getMessage());
     }
 
-    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+    private ResponseEntity<ResponseObject> build(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(
+                ResponseObject.builder()
+                        .status(status)
+                        .message(message)
+                        .build()
+        );
     }
 }

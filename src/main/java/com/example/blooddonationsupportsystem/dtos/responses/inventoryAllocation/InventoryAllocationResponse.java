@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryAllocationResponse {
-    private BloodRequestInventoryKey allocationId;
+    private Integer requestId;
     private Integer inventoryId;
-    private Integer bloodType;
-    private Integer bloodComponent;
-    private Integer quantityAllocated;
+    private Integer bloodTypeId;
+    private Integer bloodComponentId;
+    private Integer allocatedQuantity;
 }
