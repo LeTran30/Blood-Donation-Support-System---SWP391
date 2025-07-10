@@ -1,7 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.responses.bloodType;
 
 import com.example.blooddonationsupportsystem.dtos.responses.bloodComponent.BloodComponentResponse;
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import lombok.*;
 
 import java.util.Set;
@@ -15,6 +14,6 @@ import java.util.Set;
 @Setter
 public class BloodTypeResponse {
     private Integer id;
-    private BloodTypeName typeName;
+    private String typeName;
     private Set<BloodComponentResponse> components;
 }

@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.models;
 
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,9 +20,8 @@ public class BloodType extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer bloodTypeId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private BloodTypeName typeName;
+    private String typeName;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -11,8 +11,8 @@ import java.util.List;
 public interface IInventoryService {
     Page<InventoryResponse> getAllInventory(int page, int size);
     InventoryResponse getInventoryById(Integer id);
-    void createInventory(InventoryRequest request);
-    void updateInventory(Integer id, InventoryRequest request);
+    InventoryResponse createInventory(InventoryRequest request);
+    InventoryResponse updateInventory(Integer id, InventoryRequest request);
 
     @Transactional
     void updateInventoryAfterDonation(BloodDonation bloodDonation);

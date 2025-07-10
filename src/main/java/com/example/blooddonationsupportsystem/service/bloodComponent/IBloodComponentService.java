@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IBloodComponentService {
     Page<BloodComponentResponse> getAllBloodComponents(int page,int size);
-    void createBloodComponent(BloodComponentRequest request);
-    void updateBloodComponent(Integer id, BloodComponentRequest request);
+    BloodComponentResponse createBloodComponent(BloodComponentRequest request);
+    BloodComponentResponse updateBloodComponent(Integer id, BloodComponentRequest request);
     void deleteBloodComponent(Integer id);
 }

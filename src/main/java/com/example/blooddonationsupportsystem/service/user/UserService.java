@@ -426,7 +426,7 @@ public class UserService implements IUserService {
             userRepository.save(user);
 
             UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
-
+            response.setBloodTypeId(user.getBloodType().getBloodTypeId());
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("User updated successfully")

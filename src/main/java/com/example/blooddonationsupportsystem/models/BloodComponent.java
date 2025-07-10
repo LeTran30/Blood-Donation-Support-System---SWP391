@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.models;
 
-import com.example.blooddonationsupportsystem.utils.BloodComponentName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,9 +21,8 @@ public class BloodComponent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer componentId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private BloodComponentName componentName;
+    private String componentName;
 
     @ManyToMany(mappedBy = "components")
     private Set<BloodType> bloodTypes = new HashSet<>();

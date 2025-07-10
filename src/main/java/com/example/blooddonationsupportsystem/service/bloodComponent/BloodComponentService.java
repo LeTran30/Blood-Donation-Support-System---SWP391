@@ -32,19 +32,27 @@ public class BloodComponentService implements IBloodComponentService {
     }
 
     @Override
-    public void createBloodComponent(BloodComponentRequest request) {
+    public BloodComponentResponse createBloodComponent(BloodComponentRequest request) {
         BloodComponent component = new BloodComponent();
         component.setComponentName(request.getComponentName());
         bloodComponentRepository.save(component);
+        return BloodComponentResponse.builder()
+                .componentId(component.getComponentId())
+                .componentName(component.getComponentName())
+                .build();
     }
 
     @Override
-    public void updateBloodComponent(Integer id, BloodComponentRequest request) {
+    public BloodComponentResponse updateBloodComponent(Integer id, BloodComponentRequest request) {
         BloodComponent existing = bloodComponentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("BloodComponent not found"));
 
         existing.setComponentName(request.getComponentName());
         bloodComponentRepository.save(existing);
+        return BloodComponentResponse.builder()
+                .componentId(existing.getComponentId())
+                .componentName(existing.getComponentName())
+                .build();
     }
 
     @Override

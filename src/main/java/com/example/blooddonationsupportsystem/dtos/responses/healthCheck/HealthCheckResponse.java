@@ -1,7 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.responses.healthCheck;
 
 
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +23,5 @@ public class HealthCheckResponse {
 
     // User's blood type information
     private Integer bloodTypeId;
-    private BloodTypeName bloodTypeName;
+    private String bloodTypeName;
 }

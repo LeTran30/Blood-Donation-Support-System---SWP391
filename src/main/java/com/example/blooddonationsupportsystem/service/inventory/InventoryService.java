@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,8 @@ public class InventoryService implements IInventoryService {
                 .stream()
                 .map(inventory -> InventoryResponse.builder()
                         .id(inventory.getInventoryId())
-                        .bloodType(inventory.getBloodType().getBloodTypeId())
+                        .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                        .bloodComponentId(inventory.getBloodComponent().getComponentId())
                         .quantity(inventory.getQuantity())
                         .lastUpdated(inventory.getLastUpdated())
                         .build())
@@ -49,31 +51,53 @@ public class InventoryService implements IInventoryService {
                 .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
         return InventoryResponse.builder()
                 .id(inventory.getInventoryId())
-                .bloodType(inventory.getBloodType().getBloodTypeId())
+                .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .bloodComponentId(inventory.getBloodComponent().getComponentId())
                 .quantity(inventory.getQuantity())
                 .lastUpdated(inventory.getLastUpdated())
                 .build();
     }
 
     @Override
-    public void createInventory(InventoryRequest request) {
+    public InventoryResponse createInventory(InventoryRequest request) {
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
                 .orElseThrow(() -> new RuntimeException("Cannot find blood type with id: " + request.getBloodTypeId()));
 
         BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
                 .orElseThrow(() -> new RuntimeException("Cannot find blood component with id: " + request.getBloodComponentId()));
 
-        Inventory inventory = Inventory.builder()
-                .bloodType(bloodType)
-                .bloodComponent(bloodComponent)
-                .quantity(request.getQuantity())
-                .build();
+        // Tìm xem inventory đã tồn tại chưa
+        Optional<Inventory> optionalInventory = inventoryRepository.findByBloodTypeAndBloodComponent(bloodType, bloodComponent);
+
+        Inventory inventory;
+        if (optionalInventory.isPresent()) {
+            // Nếu tồn tại, cộng dồn số lượng
+            inventory = optionalInventory.get();
+            inventory.setQuantity(inventory.getQuantity() + request.getQuantity());
+        } else {
+            // Nếu chưa tồn tại, tạo mới
+            inventory = Inventory.builder()
+                    .bloodType(bloodType)
+                    .bloodComponent(bloodComponent)
+                    .quantity(request.getQuantity())
+                    .build();
+        }
+
         inventoryRepository.save(inventory);
+
+        return InventoryResponse.builder()
+                .id(inventory.getInventoryId())
+                .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .bloodComponentId(inventory.getBloodComponent().getComponentId())
+                .quantity(inventory.getQuantity())
+                .lastUpdated(inventory.getLastUpdated())
+                .build();
     }
 
 
+
     @Override
-    public void updateInventory(Integer id, InventoryRequest request) {
+    public InventoryResponse updateInventory(Integer id, InventoryRequest request) {
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
 
@@ -92,6 +116,13 @@ public class InventoryService implements IInventoryService {
         inventory.setQuantity(request.getQuantity());
         inventory.setLastUpdated(LocalDateTime.now());
         inventoryRepository.save(inventory);
+        return InventoryResponse.builder()
+                .id(inventory.getInventoryId())
+                .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .bloodComponentId(inventory.getBloodComponent().getComponentId())
+                .quantity(inventory.getQuantity())
+                .lastUpdated(inventory.getLastUpdated())
+                .build();
     }
 
     @Transactional

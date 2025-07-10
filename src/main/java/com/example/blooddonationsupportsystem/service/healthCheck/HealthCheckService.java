@@ -102,14 +102,6 @@ public class HealthCheckService implements IHealthCheckService {
             Pageable pageable = PageRequest.of(page, size, Sort.by("checkedAt").descending());
             Page<HealthCheck> healthChecksPage = healthCheckRepository.findByUserId(userId, pageable);
 
-            if (healthChecksPage.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ResponseObject.builder()
-                                .status(HttpStatus.NOT_FOUND)
-                                .message("No health check records found for userId: " + userId)
-                                .build());
-            }
-
             List<HealthCheckResponse> responses = healthChecksPage.getContent().stream()
                     .map(hc -> HealthCheckResponse.builder()
                             .healthCheckId(hc.getId())
@@ -144,6 +136,7 @@ public class HealthCheckService implements IHealthCheckService {
                             .build());
         }
     }
+
 
     @Override
     public ResponseEntity<?> getByAppointmentId(Integer appointmentId) {

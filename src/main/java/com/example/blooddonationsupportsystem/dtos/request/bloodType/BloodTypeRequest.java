@@ -1,6 +1,5 @@
 package com.example.blooddonationsupportsystem.dtos.request.bloodType;
 
-import com.example.blooddonationsupportsystem.utils.BloodTypeName;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
@@ -14,6 +13,6 @@ import java.util.Set;
 @Setter
 public class BloodTypeRequest {
     @NotEmpty
-    private BloodTypeName typeName;
+    private String typeName;
     private Set<Integer> componentIds; // List of IDs of BloodComponent
 }
