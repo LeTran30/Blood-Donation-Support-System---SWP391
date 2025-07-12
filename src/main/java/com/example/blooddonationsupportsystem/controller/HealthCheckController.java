@@ -44,7 +44,7 @@ public class HealthCheckController {
     }
 
     @GetMapping("/users/{userId}/health-checks")
-    @PreAuthorize("hasAnyAuthority('member:read', 'staff:read')")
+    @PreAuthorize("hasAnyAuthority('member:read', 'staff:read', 'admin:read')")
     public ResponseEntity<?> getHealthChecksByUser(
             @PathVariable Integer userId,
             @RequestParam(defaultValue = "0") int page,
