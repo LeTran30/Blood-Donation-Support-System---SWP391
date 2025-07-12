@@ -121,7 +121,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/filter")
-    @PreAuthorize("hasAuthority('staff:read')")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'staff:read')")
     public ResponseEntity<?> getAppointmentsWithFilters(
             @RequestParam(required = false) LocalDateTime from,
             @RequestParam(required = false) LocalDateTime to,
