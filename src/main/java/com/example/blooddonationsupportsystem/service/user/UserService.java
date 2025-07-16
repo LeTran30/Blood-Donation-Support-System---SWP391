@@ -418,9 +418,9 @@ public class UserService implements IUserService {
             if (request.getBloodTypeId() != null) {
             Optional<BloodType> optionalBloodType = bloodTypeRepository.findById(request.getBloodTypeId());
             if (optionalBloodType.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid blood type ID");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid blood type ID");
             }
-            user.setBloodType(optionalBloodType.get())
+            user.setBloodType(optionalBloodType.get());
             }
 
             userRepository.save(user);
