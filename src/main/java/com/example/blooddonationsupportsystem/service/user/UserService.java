@@ -328,12 +328,21 @@ public class UserService implements IUserService {
                                 .build());
             }
 
-            modelMapper.typeMap(User.class, UserDetailResponse.class).addMappings(mapper -> {
-               mapper.map(src -> {
-                  BloodType bloodType = src.getBloodType();
-                  return bloodType != null ? bloodType.getBloodTypeId() : null;
-               }, UserDetailResponse::setBloodTypeId);
-            });
+            UserDetailResponse response = UserDetailResponse.builder()
+    .id(user.getId())
+    .fullName(user.getFullName())
+    .email(user.getEmail())
+    .role(user.getRole())
+    .status(user.isStatus())
+    .phoneNumber(user.getPhoneNumber())
+    .address(user.getAddress())
+    .gender(user.getGender())
+    .latitude(user.getLatitude())
+    .longitude(user.getLongitude())
+    .dateOfBirth(user.getDateOfBirth())
+    .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
+    .build();
+
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
@@ -430,12 +439,21 @@ public class UserService implements IUserService {
 
             userRepository.save(user);
 
-            modelMapper.typeMap(User.class, UserDetailResponse.class).addMappings(mapper -> {
-               mapper.map(src -> {
-                 BloodType bloodType = src.getBloodType();
-                 return bloodType != null ? bloodType.getBloodTypeId() : null;
-               }, UserDetailResponse::setBloodTypeId);
-            });
+            UserDetailResponse response = UserDetailResponse.builder()
+    .id(user.getId())
+    .fullName(user.getFullName())
+    .email(user.getEmail())
+    .role(user.getRole())
+    .status(user.isStatus())
+    .phoneNumber(user.getPhoneNumber())
+    .address(user.getAddress())
+    .gender(user.getGender())
+    .latitude(user.getLatitude())
+    .longitude(user.getLongitude())
+    .dateOfBirth(user.getDateOfBirth())
+    .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
+    .build();
+
 
             response.setBloodTypeId(user.getBloodType().getBloodTypeId());
             return ResponseEntity.ok(ResponseObject.builder()
