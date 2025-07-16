@@ -416,12 +416,13 @@ public class UserService implements IUserService {
                 user.setAddress(request.getAddress());
             }
             if (request.getBloodTypeId() != null) {
-                BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                        .orElse(null);
-                if (bloodType != null) {
-                    user.setBloodType(bloodType);
-                }
-            }
+            Optional<BloodType> bloodTypeOptional = bloodTypeRepository.findById(request.getBloodTypeId());
+            if (bloodTypeOptional.isPresent()) {
+                user.setBloodType(bloodTypeOptional.get());
+            } else {
+                // Handle case where provided bloodTypeId does not exist
+                return new ResponseEntity<>("BloodType with ID: " + request.getBloodTypeId() + " not found.", HttpStatus.BAD_REQUEST);
+            }        
 
             userRepository.save(user);
 
