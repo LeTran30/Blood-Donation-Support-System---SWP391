@@ -328,7 +328,12 @@ public class UserService implements IUserService {
                                 .build());
             }
 
-            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
+            modelMapper.typeMap(User.class, UserDetailResponse.class).addMappings(mapper -> {
+               mapper.map(src -> {
+                  BloodType bloodType = src.getBloodType();
+                  return bloodType != null ? bloodType.getBloodTypeId() : null;
+               }, UserDetailResponse::setBloodTypeId);
+            });
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
@@ -425,7 +430,13 @@ public class UserService implements IUserService {
 
             userRepository.save(user);
 
-            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
+            modelMapper.typeMap(User.class, UserDetailResponse.class).addMappings(mapper -> {
+               mapper.map(src -> {
+                 BloodType bloodType = src.getBloodType();
+                 return bloodType != null ? bloodType.getBloodTypeId() : null;
+               }, UserDetailResponse::setBloodTypeId);
+            });
+
             response.setBloodTypeId(user.getBloodType().getBloodTypeId());
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
