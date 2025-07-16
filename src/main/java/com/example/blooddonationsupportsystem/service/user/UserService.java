@@ -422,7 +422,8 @@ public class UserService implements IUserService {
             } else {
                 // Handle case where provided bloodTypeId does not exist
                 return new ResponseEntity<>("BloodType with ID: " + request.getBloodTypeId() + " not found.", HttpStatus.BAD_REQUEST);
-            }        
+            } 
+            }
 
             userRepository.save(user);
 
