@@ -37,4 +37,7 @@ public interface IUserService {
     ResponseEntity<?> findNearbyDonors(Double lat, Double lon, Double radiusKm, int page, int size);
 
     ResponseEntity<RegisterResponse> registerStaff(@Valid RegisterRequest registerRequest);
+
+    ResponseEntity<?> loginWithGoogle(String idTokenString);
+
 }

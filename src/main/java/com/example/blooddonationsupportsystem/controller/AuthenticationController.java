@@ -82,8 +82,9 @@ public class AuthenticationController {
         return  userService.resetPassword(email, otp,password);
     }
 
-
-
-
+    @PostMapping("/google-login")
+    public ResponseEntity<?> loginWithGoogle(@RequestParam String idTokenString) {
+        return userService.loginWithGoogle(idTokenString);
+    }   
 
 }

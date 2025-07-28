@@ -15,6 +15,11 @@ import com.example.blooddonationsupportsystem.service.jwt.IJwtService;
 import com.example.blooddonationsupportsystem.utils.Role;
 import com.example.blooddonationsupportsystem.utils.TokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.Value;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +58,9 @@ public class UserService implements IUserService {
     private final ModelMapper modelMapper;
     private final OtpService otpService;
     private final BloodTypeRepository bloodTypeRepository;
+
+    @Value("${google.oauth2.client-id}")
+    private String googleClientId;
 
     @Override
     public ResponseEntity<RegisterResponse> register(RegisterRequest registerRequest) {
@@ -567,4 +576,65 @@ public class UserService implements IUserService {
         tokenRepository.saveAll(tokenList);
     }
 
+
+   public ResponseEntity<?> loginWithGoogle(String idTokenString) {
+    try {
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(idTokenString);
+        if (idToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.UNAUTHORIZED)
+                            .message("Invalid Google token")
+                            .build());
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String email = payload.getEmail();
+        String fullName = (String) payload.get("name");
+        String phoneNumber = ""; // Google không trả sẵn
+
+        // Tạo user nếu chưa tồn tại
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            user = User.builder()
+                    .email(email)
+                    .fullName(fullName)
+                    .phoneNumber(phoneNumber)
+                    .role(Role.MEMBER)
+                    .status(true)
+                    .build();
+            userRepository.save(user);
+        }
+
+        // Generate token
+        String jwtToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        saveToken(user, jwtToken, refreshToken);
+
+        UserResponse userResponse = modelMapper.map(user, UserResponse.class);
+        return ResponseEntity.ok(AuthenticationResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Login with Google successful")
+                .data(AuthenticationResponse.ResponseData.builder()
+                        .token(jwtToken)
+                        .refreshToken(refreshToken)
+                        .user(userResponse)
+                        .build())
+                .build());
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseObject.builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .message("Google login failed: " + e.getMessage())
+                        .build());
+    }
+}
 }

@@ -1,6 +1,9 @@
 server:
   port: 8080
 #  port: 8081
+google:
+  oauth2:
+    client-id: 58653985365-csotmvufqqqonkaeouhjraqjtcvtapgt.apps.googleusercontent.com
 
 open:
   api:
@@ -9,8 +12,8 @@ open:
     description: API for the blood-donation-support system
     licenseUrl: "https://example.com/license" # Replace with actual license URL
     licenseName: API License
-    serversUrl: https://bds-system.azurewebsites.net
-#    serversUrl: http://localhost:8081
+    # serversUrl: https://bds-system.azurewebsites.net
+    serversUrl: http://localhost:8080
     serversDescription: Azure Production
 
 springdoc:
@@ -26,9 +29,9 @@ spring:
   application:
     name: blood-donation-support-system
   datasource:
-#     url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
-#     username: root
-#     password: 12345
+    #     url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
+    #     username: root
+    #     password: 12345
     url: ${DB_URL:jdbc:mysql://hopper.proxy.rlwy.net:20492/BloodDonationSupportSystem}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:ouZMiVTcQFeORQEEGyjaCpUQnMEvqkvu}
