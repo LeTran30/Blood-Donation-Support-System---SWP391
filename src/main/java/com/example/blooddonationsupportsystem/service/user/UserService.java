@@ -328,7 +328,22 @@ public class UserService implements IUserService {
                                 .build());
             }
 
-            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
+            UserDetailResponse response =
+                UserDetailResponse.builder()
+                                  .id(user.getId())
+                                  .fullName(user.getFullName())
+                                  .email(user.getEmail())
+                                  .role(user.getRole())
+                                  .status(user.isStatus())
+                                  .phoneNumber(user.getPhoneNumber())
+                                  .address(user.getAddress())
+                                  .gender(user.getGender())
+                                  .latitude(user.getLatitude())
+                                  .longitude(user.getLongitude())
+                                  .dateOfBirth(user.getDateOfBirth())
+                                  .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
+                                  .build(); 
+
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
@@ -416,18 +431,30 @@ public class UserService implements IUserService {
                 user.setAddress(request.getAddress());
             }
             if (request.getBloodTypeId() != null) {
-            Optional<BloodType> bloodTypeOptional = bloodTypeRepository.findById(request.getBloodTypeId());
-            if (bloodTypeOptional.isPresent()) {
-                user.setBloodType(bloodTypeOptional.get());
-            } else {
-                // Handle case where provided bloodTypeId does not exist
-                return new ResponseEntity<>("BloodType with ID: " + request.getBloodTypeId() + " not found.", HttpStatus.BAD_REQUEST);
-            }        
+            Optional<BloodType> optionalBloodType = bloodTypeRepository.findById(request.getBloodTypeId());
+            if (optionalBloodType.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid blood type ID");
+            }
+            user.setBloodType(optionalBloodType.get());
+            }
 
             userRepository.save(user);
+            UserDetailResponse response = 
+                UserDetailResponse.builder()
+                                  .id(user.getId())
+                                  .fullName(user.getFullName())
+                                  .email(user.getEmail())
+                                  .role(user.getRole())
+                                  .status(user.isStatus())
+                                  .phoneNumber(user.getPhoneNumber())
+                                  .address(user.getAddress())
+                                  .gender(user.getGender())
+                                  .latitude(user.getLatitude())
+                                  .longitude(user.getLongitude())
+                                  .dateOfBirth(user.getDateOfBirth())
+                                  .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
+                                  .build();
 
-            UserDetailResponse response = modelMapper.map(user, UserDetailResponse.class);
-            response.setBloodTypeId(user.getBloodType().getBloodTypeId());
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("User updated successfully")
