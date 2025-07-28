@@ -1,7 +1,6 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.appointment.AppointmentRequest;
-import com.example.blooddonationsupportsystem.dtos.request.healthCheck.HealthCheckRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
