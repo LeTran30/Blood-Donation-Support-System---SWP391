@@ -6,5 +6,4 @@ import lombok.Data;
 public class CreateBlogRequest {
     private String title;
     private String content;
-    private String author;
 }

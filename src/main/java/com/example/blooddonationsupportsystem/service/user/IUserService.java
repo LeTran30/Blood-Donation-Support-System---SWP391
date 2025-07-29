@@ -3,7 +3,6 @@ package com.example.blooddonationsupportsystem.service.user;
 import com.example.blooddonationsupportsystem.dtos.request.user.Authentication;
 import com.example.blooddonationsupportsystem.dtos.request.user.RegisterRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.user.AuthenticationResponse;
-import com.example.blooddonationsupportsystem.dtos.responses.user.ListUserResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.user.RegisterResponse;
 import com.example.blooddonationsupportsystem.dtos.request.user.UpdateUserRequest;
 import jakarta.servlet.http.HttpServletRequest;

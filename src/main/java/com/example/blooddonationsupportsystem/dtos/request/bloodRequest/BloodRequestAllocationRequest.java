@@ -3,13 +3,11 @@ package com.example.blooddonationsupportsystem.dtos.request.bloodRequest;
 import com.example.blooddonationsupportsystem.utils.UrgencyLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
 
 @Setter
 @Getter

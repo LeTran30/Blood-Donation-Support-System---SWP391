@@ -3,7 +3,6 @@ package com.example.blooddonationsupportsystem.controller;
 import com.example.blooddonationsupportsystem.dtos.request.bloodType.BloodTypeRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.bloodType.BloodTypeResponse;
-import com.example.blooddonationsupportsystem.exceptions.EntityNotFoundException;
 import com.example.blooddonationsupportsystem.service.bloodType.IBloodTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
