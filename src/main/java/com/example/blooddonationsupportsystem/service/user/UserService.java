@@ -35,10 +35,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.IOException;
+import java.security.AuthProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,8 +61,6 @@ public class UserService implements IUserService {
     private final OtpService otpService;
     private final BloodTypeRepository bloodTypeRepository;
 
-    @Value("${google.oauth2.client-id}")
-    private String googleClientId;
 
     @Override
     public ResponseEntity<RegisterResponse> register(RegisterRequest registerRequest) {
@@ -575,58 +575,54 @@ public class UserService implements IUserService {
         });
         tokenRepository.saveAll(tokenList);
     }
-
-
-   public ResponseEntity<?> loginWithGoogle(String idTokenString) {
+       public ResponseEntity<?> loginWithGoogle(String idTokenString) {
     try {
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                GsonFactory.getDefaultInstance())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
+        // Gọi Google API để xác thực token
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString;
+        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
-        GoogleIdToken idToken = verifier.verify(idTokenString);
-        if (idToken == null) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.UNAUTHORIZED)
-                            .message("Invalid Google token")
+                            .message("Google token verification failed")
                             .build());
         }
 
-        GoogleIdToken.Payload payload = idToken.getPayload();
-        String email = payload.getEmail();
-        String fullName = (String) payload.get("name");
-        String phoneNumber = ""; // Google không trả sẵn
+        Map<String, Object> payload = response.getBody();
+        String email = (String) payload.get("email");
+        String name = (String) payload.get("name");
 
-        // Tạo user nếu chưa tồn tại
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null) {
-            user = User.builder()
+        // Tìm hoặc tạo user
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = User.builder()
                     .email(email)
-                    .fullName(fullName)
-                    .phoneNumber(phoneNumber)
+                    .fullName(name)
+                    .password("") // Mặc định
                     .role(Role.MEMBER)
-                    .status(true)
                     .build();
-            userRepository.save(user);
-        }
+            return userRepository.save(newUser);
+        });
 
-        // Generate token
+        // Mapping sang DTO nếu có
+        UserResponse userResponse = modelMapper.map(user, UserResponse.class);
+
+        // Tạo token
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        saveToken(user, jwtToken, refreshToken);
 
-        UserResponse userResponse = modelMapper.map(user, UserResponse.class);
-        return ResponseEntity.ok(AuthenticationResponse.builder()
-                .status(HttpStatus.OK.value())
-                .message("Login with Google successful")
+        var authResponse = AuthenticationResponse.builder()
+                .status(200)
+                .message("Successfully")
                 .data(AuthenticationResponse.ResponseData.builder()
                         .token(jwtToken)
                         .refreshToken(refreshToken)
                         .user(userResponse)
                         .build())
-                .build());
+                .build();
+
+        return ResponseEntity.ok(authResponse);
 
     } catch (Exception e) {
         e.printStackTrace();
