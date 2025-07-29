@@ -598,8 +598,17 @@ public class UserService implements IUserService {
 
         User user = userRepository.findByEmail(email).orElse(null);
 
-        if (user == null) {
-            try {
+        if (user != null) {
+        if (!user.isStatus()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.FORBIDDEN)
+                                .message("Tài khoản của bạn đã bị vô hiệu hóa")
+                                .build());
+        }
+        } else {
+        // Nếu chưa tồn tại user, tạo mới
+        try {
                 user = userRepository.save(User.builder()
                         .email(email)
                         .fullName(name)
@@ -607,28 +616,37 @@ public class UserService implements IUserService {
                         .role(Role.MEMBER)
                         .status(true)
                         .build());
-            } catch (DataIntegrityViolationException ex) {
-                // 2. Retry 3 lần nếu bị lỗi trùng email
+        } catch (DataIntegrityViolationException ex) {
+                // Retry nếu trùng email do race condition
                 int maxRetries = 3;
                 int delayMs = 200;
                 for (int i = 0; i < maxRetries; i++) {
-                    Thread.sleep(delayMs);
-                    Optional<User> retryUser = userRepository.findByEmail(email);
-                    if (retryUser.isPresent()) {
+                Thread.sleep(delayMs);
+                Optional<User> retryUser = userRepository.findByEmail(email);
+                if (retryUser.isPresent()) {
                         user = retryUser.get();
+                        if (!user.isStatus()) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ResponseObject.builder()
+                                        .status(HttpStatus.FORBIDDEN)
+                                        .message("Tài khoản của bạn đã bị vô hiệu hóa")
+                                        .build());
+                        }
                         break;
-                    }
+                }
                 }
 
                 if (user == null) {
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(ResponseObject.builder()
-                                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                    .message("Google login failed: cannot recover user after duplication")
-                                    .build());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .message("Google login failed: cannot recover user after duplication")
+                                .build());
                 }
-            }
         }
+        }
+
+
 
         // 3. Tạo JWT
         UserResponse userResponse = modelMapper.map(user, UserResponse.class);
