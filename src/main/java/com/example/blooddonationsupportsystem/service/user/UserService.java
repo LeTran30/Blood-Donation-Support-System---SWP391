@@ -62,7 +62,6 @@ public class UserService implements IUserService {
     private final OtpService otpService;
     private final BloodTypeRepository bloodTypeRepository;
 
-
     @Override
     public ResponseEntity<RegisterResponse> register(RegisterRequest registerRequest) {
         try {
@@ -598,6 +597,7 @@ public class UserService implements IUserService {
 
         User user = userRepository.findByEmail(email).orElse(null);
 
+
         if (user != null) {
         if (!user.isStatus()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -661,12 +661,13 @@ public class UserService implements IUserService {
                         .refreshToken(refreshToken)
                         .user(userResponse)
                         .build())
-                .build();
 
+                .build();
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Login with Google successful")
                 .data(authResponse)
+
                 .build());
 
     } catch (Exception e) {

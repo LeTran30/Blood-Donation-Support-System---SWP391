@@ -1,6 +1,9 @@
 server:
   port: 8080
 #  port: 8081
+google:
+  oauth2:
+    client-id: 58653985365-csotmvufqqqonkaeouhjraqjtcvtapgt.apps.googleusercontent.com
 
 open:
   api:

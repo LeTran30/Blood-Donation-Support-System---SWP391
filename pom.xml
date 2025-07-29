@@ -116,6 +116,7 @@
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
