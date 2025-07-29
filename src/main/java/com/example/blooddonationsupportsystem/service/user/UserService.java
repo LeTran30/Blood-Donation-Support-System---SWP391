@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -575,9 +576,10 @@ public class UserService implements IUserService {
         });
         tokenRepository.saveAll(tokenList);
     }
-       public ResponseEntity<?> loginWithGoogle(String idTokenString) {
+    @Override
+    public ResponseEntity<?> loginWithGoogle(String idTokenString) {
     try {
-        // Gọi Google API để xác thực token
+        // 1. Xác thực token với Google
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idTokenString;
         ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
@@ -594,25 +596,46 @@ public class UserService implements IUserService {
         String email = (String) payload.get("email");
         String name = (String) payload.get("name");
 
-        // Tìm hoặc tạo user
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = User.builder()
-                    .email(email)
-                    .fullName(name)
-                    .password("") // Mặc định
-                    .role(Role.MEMBER)
-                    .build();
-            return userRepository.save(newUser);
-        });
+        User user = userRepository.findByEmail(email).orElse(null);
 
-        // Mapping sang DTO nếu có
+        if (user == null) {
+            try {
+                user = userRepository.save(User.builder()
+                        .email(email)
+                        .fullName(name)
+                        .password("") 
+                        .role(Role.MEMBER)
+                        .status(true)
+                        .build());
+            } catch (DataIntegrityViolationException ex) {
+                // 2. Retry 3 lần nếu bị lỗi trùng email
+                int maxRetries = 3;
+                int delayMs = 200;
+                for (int i = 0; i < maxRetries; i++) {
+                    Thread.sleep(delayMs);
+                    Optional<User> retryUser = userRepository.findByEmail(email);
+                    if (retryUser.isPresent()) {
+                        user = retryUser.get();
+                        break;
+                    }
+                }
+
+                if (user == null) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(ResponseObject.builder()
+                                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                    .message("Google login failed: cannot recover user after duplication")
+                                    .build());
+                }
+            }
+        }
+
+        // 3. Tạo JWT
         UserResponse userResponse = modelMapper.map(user, UserResponse.class);
-
-        // Tạo token
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        var authResponse = AuthenticationResponse.builder()
+        AuthenticationResponse authResponse = AuthenticationResponse.builder()
                 .status(200)
                 .message("Successfully")
                 .data(AuthenticationResponse.ResponseData.builder()
@@ -622,7 +645,11 @@ public class UserService implements IUserService {
                         .build())
                 .build();
 
-        return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Login with Google successful")
+                .data(authResponse)
+                .build());
 
     } catch (Exception e) {
         e.printStackTrace();
