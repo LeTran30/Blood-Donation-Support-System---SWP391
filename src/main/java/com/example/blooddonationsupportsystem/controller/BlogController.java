@@ -1,10 +1,16 @@
 package com.example.blooddonationsupportsystem.controller;
 import com.example.blooddonationsupportsystem.dtos.request.blog.CreateBlogRequest;
 import com.example.blooddonationsupportsystem.dtos.request.blog.UpdateBlogRequest;
+import com.example.blooddonationsupportsystem.models.User;
+import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.blog.IBlogService;
 import lombok.RequiredArgsConstructor;
+
+import java.security.Principal;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,17 +19,28 @@ import org.springframework.web.bind.annotation.*;
 public class BlogController {
 
     private final IBlogService blogService;
+    private final UserRepository userRepository;
+
 
     @PreAuthorize("true")
     @PostMapping
-    public ResponseEntity<?> createBlog(@RequestBody CreateBlogRequest request) {
-        return blogService.createBlog(request);
+    public ResponseEntity<?> createBlog(
+        @RequestBody CreateBlogRequest request,
+        Principal principal
+    ) {
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return blogService.createBlog(request, user.getId());
     }
 
     @PreAuthorize("true")
     @GetMapping
-    public ResponseEntity<?> getAllBlogs() {
-        return blogService.getAllBlogs();
+    public ResponseEntity<?> getAllBlogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return blogService.getAllBlogs(page, size);
     }
     @PreAuthorize("true")
     @GetMapping("/{id}")
@@ -42,4 +59,19 @@ public class BlogController {
     public ResponseEntity<?> deleteBlog(@PathVariable Integer id) {
         return blogService.deleteBlog(id);
     }
+
+@GetMapping("/my-blogs")
+@PreAuthorize("true")
+public ResponseEntity<?> getMyBlogs(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        Principal principal
+) {
+    String email = principal.getName();
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+    return blogService.getMyBlogs(user.getId(), page, size);
+}
+
 }

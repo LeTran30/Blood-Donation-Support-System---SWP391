@@ -6,7 +6,6 @@ import com.example.blooddonationsupportsystem.models.BloodDonation;
 import com.example.blooddonationsupportsystem.utils.DonationStatus;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 public interface IBloodDonationService {
     BloodDonationResponse getBloodDonationById(int id);

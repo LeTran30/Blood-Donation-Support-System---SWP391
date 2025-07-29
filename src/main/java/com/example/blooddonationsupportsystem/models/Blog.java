@@ -12,7 +12,7 @@ import lombok.*;
 public class Blog extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false)
     private String title;
@@ -20,6 +20,7 @@ public class Blog extends BaseEntity {
     @Column(columnDefinition = "TEXT") 
     private String content;
 
-    @Column(nullable = false)
-    private String author;
+    @ManyToOne(fetch = FetchType.LAZY) // hoặc EAGER tùy nhu cầu
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 }

@@ -2,7 +2,6 @@ package com.example.blooddonationsupportsystem.service.reminder;
 
 import com.example.blooddonationsupportsystem.dtos.request.reminder.ReminderRequest;
 import com.example.blooddonationsupportsystem.utils.ReminderType;
-import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;

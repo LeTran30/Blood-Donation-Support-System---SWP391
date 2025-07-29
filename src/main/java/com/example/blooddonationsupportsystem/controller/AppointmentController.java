@@ -5,7 +5,6 @@ import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.appointment.IAppointmentService;
-import com.example.blooddonationsupportsystem.service.healthCheck.HealthCheckService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import com.example.blooddonationsupportsystem.utils.Role;
 import jakarta.validation.Valid;
@@ -29,8 +28,6 @@ import java.util.List;
 public class AppointmentController {
     private final IAppointmentService appointmentService;
     private final UserRepository userRepository;
-    private final HealthCheckService healthCheckService;
-
     @PostMapping
     @PreAuthorize("hasAuthority('member:create')")
     public ResponseEntity<?> createAppointment(

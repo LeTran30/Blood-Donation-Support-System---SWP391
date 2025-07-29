@@ -6,8 +6,6 @@ import com.example.blooddonationsupportsystem.models.BloodDonation;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public interface IInventoryService {
     Page<InventoryResponse> getAllInventory(int page, int size);
     InventoryResponse getInventoryById(Integer id);

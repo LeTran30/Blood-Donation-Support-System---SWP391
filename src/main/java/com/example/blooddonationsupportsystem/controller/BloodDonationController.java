@@ -28,7 +28,6 @@ import java.util.Objects;
 public class BloodDonationController {
     private final IBloodDonationService bloodDonationService;
     private final IInventoryService inventoryService;
-    private final UserRepository userRepository;
 
     @GetMapping()
     public ResponseEntity<?> getBloodDonation(

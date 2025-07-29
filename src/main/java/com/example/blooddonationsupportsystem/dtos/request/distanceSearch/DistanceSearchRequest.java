@@ -1,6 +1,5 @@
     package com.example.blooddonationsupportsystem.dtos.request.distanceSearch;
 
-    import jakarta.validation.constraints.DecimalMin;
     import jakarta.validation.constraints.NotNull;
     import jakarta.validation.constraints.Positive;
     import lombok.*;
