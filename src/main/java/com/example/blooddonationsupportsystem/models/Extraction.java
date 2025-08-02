@@ -7,17 +7,17 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "extracts")
+@Table(name = "extractions")
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Extract extends BaseEntity {
+public class Extraction extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer extractId;
+    private Integer extractionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_id", nullable = true)
@@ -34,6 +34,9 @@ public class Extract extends BaseEntity {
     @Min(value = 1, message = "Volume extracted must be greater than 0")
     @Column(nullable = false)
     private Integer volumeExtracted;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     @Column(nullable = false)
     private LocalDateTime extractedAt = LocalDateTime.now();

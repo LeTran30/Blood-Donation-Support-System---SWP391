@@ -18,6 +18,9 @@ public class InventoryRequest {
     @NotNull
     private Integer bloodTypeId;
 
+    @NotNull
+    private Integer componentId;
+
     @Min(value = 1, message = "quantity must be greater than or equal to 1")
     @Max(value = 1000, message = "quantity must be less than or equal to 1000")
     private Integer quantity;
@@ -28,4 +31,7 @@ public class InventoryRequest {
     @NotNull
     @FutureOrPresent(message = "Expiry date must be in the present or future")
     private LocalDate expiryDate;
+
+    @NotNull(message = "Batch number is required")
+    private String batchNumber;
 }
