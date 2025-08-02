@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/blogs")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class BlogController {
 
     private final IBlogService blogService;

@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.service.extraction.IExtractionServ
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/extractions")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class ExtractionController {
 
     private final IExtractionService extractionService;
 
     @PostMapping
+    @PreAuthorize("true")
     public ResponseEntity<?> createExtraction(
             @RequestBody ExtractionRequest request,
             BindingResult result
@@ -40,11 +43,13 @@ public class ExtractionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("true")
     public ResponseEntity<?> getExtractionById(@PathVariable Integer id) {
         return extractionService.getExtractionById(id);
     }
 
     @GetMapping
+    @PreAuthorize("true")
     public ResponseEntity<?> getAllExtractions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -55,16 +60,19 @@ public class ExtractionController {
     }
 
     @GetMapping("/{extractionId}/details")
+    @PreAuthorize("true")
     public ResponseEntity<?> getExtractionDetails(@PathVariable Integer extractionId) {
         return extractionService.getExtractionDetailsByExtractionId(extractionId);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("true")
     public ResponseEntity<?> updateExtraction(@PathVariable Integer id, @RequestBody ExtractionRequest request) {
         return extractionService.updateExtraction(id, request);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("true")
     public ResponseEntity<?> deleteExtraction(@PathVariable Integer id) {
         return extractionService.deleteExtraction(id);
     }
