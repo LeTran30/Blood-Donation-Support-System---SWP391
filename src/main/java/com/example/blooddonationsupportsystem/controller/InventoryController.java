@@ -7,12 +7,14 @@ import com.example.blooddonationsupportsystem.service.inventory.IInventoryServic
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -79,6 +81,11 @@ public class InventoryController {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteInventory(@PathVariable Integer id) {
+        return inventoryService.deleteInventory(id);
+    }
+
     /**
      * Retrieves all inventory records.
      *
@@ -117,6 +124,60 @@ public class InventoryController {
                         .status(HttpStatus.OK)
                         .message("Successfully get inventory by id")
                         .data(inventoryResponse)
+                        .build()
+        );
+    }
+    
+    /**
+     * Retrieves non-expired inventory items for a specific blood type.
+     *
+     * @param bloodTypeId the ID of the blood type
+     * @param date the date to check against expiry date (defaults to current date)
+     * @return a {@link ResponseEntity} containing the response object with the
+     *         inventory items and a success message
+     */
+    @GetMapping("/blood-type/{bloodTypeId}/not-expired")
+    public ResponseEntity<?> getInventoryByBloodTypeAndNotExpired(
+            @PathVariable Integer bloodTypeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        
+        List<InventoryResponse> inventories = inventoryService.findByBloodTypeAndNotExpired(bloodTypeId, date);
+        
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully retrieved non-expired inventory for blood type")
+                        .data(inventories)
+                        .build()
+        );
+    }
+    
+    /**
+     * Retrieves expired inventory items.
+     *
+     * @param date the date to check against expiry date (defaults to current date)
+     * @return a {@link ResponseEntity} containing the response object with the
+     *         expired inventory items and a success message
+     */
+    @GetMapping("/expired")
+    public ResponseEntity<?> getExpiredInventory(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        
+        List<InventoryResponse> inventories = inventoryService.findExpiredInventory(date);
+        
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Successfully retrieved expired inventory")
+                        .data(inventories)
                         .build()
         );
     }

@@ -337,23 +337,7 @@ public class UserService implements IUserService {
                                 .build());
             }
 
-            UserDetailResponse response =
-                UserDetailResponse.builder()
-                                  .id(user.getId())
-                                  .fullName(user.getFullName())
-                                  .email(user.getEmail())
-                                  .role(user.getRole())
-                                  .status(user.isStatus())
-                                  .phoneNumber(user.getPhoneNumber())
-                                  .address(user.getAddress())
-                                  .gender(user.getGender())
-                                  .latitude(user.getLatitude())
-                                  .longitude(user.getLongitude())
-                                  .dateOfBirth(user.getDateOfBirth())
-                                  .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
-                                  .build(); 
-
-
+            UserDetailResponse response = mapUserDetailResponse(user);
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("Success")
@@ -370,6 +354,23 @@ public class UserService implements IUserService {
         }
     }
 
+    private UserDetailResponse mapUserDetailResponse(User user) {
+        return UserDetailResponse.builder()
+                          .id(user.getId())
+                          .fullName(user.getFullName())
+                          .email(user.getEmail())
+                          .role(user.getRole())
+                          .status(user.isStatus())
+                          .phoneNumber(user.getPhoneNumber())
+                          .address(user.getAddress())
+                          .gender(user.getGender())
+                          .latitude(user.getLatitude())
+                          .longitude(user.getLongitude())
+                          .dateOfBirth(user.getDateOfBirth())
+                          .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
+                          .build();
+    }
+
 
     @Override
     public ResponseEntity<?> getUserById(Integer id) {
@@ -383,11 +384,11 @@ public class UserService implements IUserService {
                                 .build());
             }
 
-            UserResponse userResponse = modelMapper.map(optionalUser.get(), UserResponse.class);
+            UserDetailResponse response = mapUserDetailResponse(optionalUser.get());
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .message("Success")
-                    .data(userResponse)
+                    .data(response)
                     .build());
 
         } catch (Exception e) {
@@ -439,6 +440,12 @@ public class UserService implements IUserService {
             if (request.getAddress() != null) {
                 user.setAddress(request.getAddress());
             }
+            if (request.getJob() != null) {
+                user.setAddress(request.getJob());
+            }
+            if (request.getCitizenId() != null) {
+                user.setAddress(request.getCitizenId());
+            }
             if (request.getBloodTypeId() != null) {
             Optional<BloodType> optionalBloodType = bloodTypeRepository.findById(request.getBloodTypeId());
             if (optionalBloodType.isEmpty()) {
@@ -448,21 +455,7 @@ public class UserService implements IUserService {
             }
 
             userRepository.save(user);
-            UserDetailResponse response = 
-                UserDetailResponse.builder()
-                                  .id(user.getId())
-                                  .fullName(user.getFullName())
-                                  .email(user.getEmail())
-                                  .role(user.getRole())
-                                  .status(user.isStatus())
-                                  .phoneNumber(user.getPhoneNumber())
-                                  .address(user.getAddress())
-                                  .gender(user.getGender())
-                                  .latitude(user.getLatitude())
-                                  .longitude(user.getLongitude())
-                                  .dateOfBirth(user.getDateOfBirth())
-                                  .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
-                                  .build();
+            UserDetailResponse response = mapUserDetailResponse(user);
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
@@ -667,7 +660,6 @@ public class UserService implements IUserService {
                 .status(HttpStatus.OK)
                 .message("Login with Google successful")
                 .data(authResponse)
-
                 .build());
 
     } catch (Exception e) {

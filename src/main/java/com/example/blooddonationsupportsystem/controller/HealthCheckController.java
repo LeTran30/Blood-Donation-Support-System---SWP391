@@ -52,4 +52,10 @@ public class HealthCheckController {
     ) {
         return healthCheckService.getHealthChecksByUserId(userId, page, size);
     }
+
+    @GetMapping("/health-checks/{id}")
+    @PreAuthorize("hasAnyAuthority('staff:read', 'admin:read')")
+    public ResponseEntity<?> getHealthCheckById(@PathVariable("id") Integer id) {
+        return healthCheckService.getHealthCheckById(id);
+    }
 }

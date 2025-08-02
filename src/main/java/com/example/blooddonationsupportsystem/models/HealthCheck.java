@@ -47,6 +47,12 @@ public class HealthCheck {
     private String ineligibleReason;
 
     @Column(nullable = false)
+    private Double weight;
+
+    @Column(nullable = true)
+    private String suggestBloodVolume;
+
+    @Column(nullable = false)
     private LocalDateTime checkedAt;
 
     @PrePersist

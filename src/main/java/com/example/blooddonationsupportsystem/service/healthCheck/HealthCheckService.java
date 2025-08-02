@@ -76,6 +76,8 @@ public class HealthCheckService implements IHealthCheckService {
                     .resultSummary(request.getResultSummary())
                     .isEligible(request.getIsEligible())
                     .ineligibleReason(request.getIneligibleReason())
+                    .weight(request.getWeight())
+                    .suggestBloodVolume(request.getSuggestBloodVolume())
                     .checkedAt(LocalDateTime.now())
                     .build();
 
@@ -153,6 +155,24 @@ public class HealthCheckService implements IHealthCheckService {
 
     }
 
+    @Override
+    public ResponseEntity<?> getHealthCheckById(Integer healthCheckId) {
+        Optional<HealthCheck> healthCheckOpt = healthCheckRepository.findById(healthCheckId);
+
+        return healthCheckOpt.map(healthCheck -> ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Health check fetched successfully")
+                        .data(mapToResponse(healthCheck))
+                        .build()
+        )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ResponseObject.builder()
+                        .status(HttpStatus.NOT_FOUND)
+                        .message("Health check not found with ID: " + healthCheckId)
+                        .build()
+        ));
+    }
+
     private HealthCheckResponse mapToResponse(HealthCheck healthCheck) {
         HealthCheckResponse.HealthCheckResponseBuilder builder = HealthCheckResponse.builder()
                 .healthCheckId(healthCheck.getId())
@@ -161,6 +181,8 @@ public class HealthCheckService implements IHealthCheckService {
                 .resultSummary(healthCheck.getResultSummary())
                 .isEligible(healthCheck.getIsEligible())
                 .ineligibleReason(healthCheck.getIneligibleReason())
+                .weight(healthCheck.getWeight())
+                .suggestBloodVolume(healthCheck.getSuggestBloodVolume())
                 .checkedAt(healthCheck.getCheckedAt());
 
         // Add blood type information if available

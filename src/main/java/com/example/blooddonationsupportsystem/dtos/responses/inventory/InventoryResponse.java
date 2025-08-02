@@ -2,6 +2,7 @@ package com.example.blooddonationsupportsystem.dtos.responses.inventory;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -13,7 +14,8 @@ import java.time.LocalDateTime;
 public class InventoryResponse {
     private Integer id;
     private Integer bloodTypeId;
-    private Integer bloodComponentId;
     private Integer quantity;
     private LocalDateTime lastUpdated;
+    private LocalDate addedDate;
+    private LocalDate expiryDate;
 }

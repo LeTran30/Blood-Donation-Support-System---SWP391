@@ -54,6 +54,12 @@ public class User extends BaseEntity implements UserDetails  {
     @Column(name = "status")
     private boolean status;
 
+    @Column(name = "citizen_id", nullable = true)
+    private String citizenId;
+
+    @Column(name = "job", nullable = true)
+    private String job;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 

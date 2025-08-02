@@ -1,6 +1,8 @@
 package com.example.blooddonationsupportsystem.dtos.request.appointment;
 
+import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -17,5 +19,10 @@ public class AppointmentRequest {
     @Schema(description = "Appointment date and time",
             example = "2025-06-05T18:00:00")
     private LocalDateTime appointmentDate;
+
+    @NotNull(message = "Health declaration is required")
+    @Valid
+    @Schema(description = "Health declaration information")
+    private HealthDeclarationRequest healthDeclaration;
 
 }

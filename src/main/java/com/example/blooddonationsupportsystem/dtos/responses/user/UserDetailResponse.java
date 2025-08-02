@@ -37,4 +37,8 @@ public class UserDetailResponse {
     private LocalDate dateOfBirth;
 
     private Integer bloodTypeId;
+    
+    private String citizenId;
+    
+    private String job;
 }
