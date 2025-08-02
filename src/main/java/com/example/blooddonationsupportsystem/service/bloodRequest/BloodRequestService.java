@@ -30,7 +30,6 @@ public class BloodRequestService implements IBloodRequestService {
     private final BloodRequestRepository bloodRequestRepository;
     private final BloodRequestInventoryRepository bloodRequestInventoryRepository;
     private final InventoryRepository inventoryRepository;
-    private final BloodComponentRepository bloodComponentRepository;
     private final BloodTypeRepository bloodTypeRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
@@ -45,15 +44,12 @@ public class BloodRequestService implements IBloodRequestService {
 
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
                 .orElseThrow(() -> new RuntimeException("Blood type not found"));
-        BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
-                .orElseThrow(() -> new RuntimeException("Blood component not found"));
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         bloodRequest.setBloodType(bloodType);
-        bloodRequest.setComponent(bloodComponent);
         bloodRequest.setStatus(RequestStatus.PENDING);
         bloodRequest.setCreatedBy(user);
         bloodRequest = bloodRequestRepository.save(bloodRequest);
@@ -144,8 +140,8 @@ public class BloodRequestService implements IBloodRequestService {
         BloodRequest bloodRequest = optionalRequest.get();
         int requestedQuantity = bloodRequest.getQuantity();
 
-        Optional<Inventory> optionalInventory = inventoryRepository.findByBloodTypeAndBloodComponent(
-                bloodRequest.getBloodType(), bloodRequest.getComponent());
+        Optional<Inventory> optionalInventory = inventoryRepository.findByBloodType(
+                bloodRequest.getBloodType());
 
         if (optionalInventory.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -233,10 +229,9 @@ public class BloodRequestService implements IBloodRequestService {
                 .bloodTypeId(
                         inventory.getBloodType() != null ? inventory.getBloodType().getBloodTypeId() : null
                 )
-                .bloodComponentId(
-                        inventory.getBloodComponent() != null ? inventory.getBloodComponent().getComponentId() : null
-                )
                 .allocatedQuantity(allocation.getAllocatedQuantity())
+                .addedDate(inventory.getAddedDate())
+                .expiryDate(inventory.getExpiryDate())
                 .build();
     }
 

@@ -34,4 +34,8 @@ public class UpdateUserRequest {
 
     private Double latitude;  // for nearby search
     private Double longitude; // for nearby search
+
+    private String citizenId;
+
+    private String job;
 }

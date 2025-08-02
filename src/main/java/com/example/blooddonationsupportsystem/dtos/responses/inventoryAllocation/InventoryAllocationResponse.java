@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,6 +16,7 @@ public class InventoryAllocationResponse {
     private Integer requestId;
     private Integer inventoryId;
     private Integer bloodTypeId;
-    private Integer bloodComponentId;
     private Integer allocatedQuantity;
+    private LocalDate addedDate;
+    private LocalDate expiryDate;
 }

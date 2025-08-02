@@ -20,6 +20,8 @@ public class HealthCheckResponse {
     private LocalDateTime checkedAt;
     private Boolean isEligible;
     private String ineligibleReason;
+    private Double weight;
+    private String suggestBloodVolume;
 
     // User's blood type information
     private Integer bloodTypeId;

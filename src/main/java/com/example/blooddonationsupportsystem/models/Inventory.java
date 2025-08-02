@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "inventories",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"bloodTypeId", "componentId"})}
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"bloodTypeId"})}
 )
 @Data//toString
 @Getter
@@ -26,10 +26,6 @@ public class Inventory {
     @JoinColumn(name = "blood_type_id", nullable = false)
     private BloodType bloodType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "component_id", nullable = false)
-    private BloodComponent bloodComponent;
-
     @Min(0)
     @Column(nullable = false)
     private Integer quantity;
@@ -37,9 +33,18 @@ public class Inventory {
     @Column(nullable = false)
     private LocalDateTime lastUpdated = LocalDateTime.now();
 
+    @Column(name = "added_date", nullable = true)
+    private LocalDate addedDate;
+
+    @Column(name = "expiry_date", nullable = true)
+    private LocalDate expiryDate;
+
     @PrePersist
     public void prePersist() {
         lastUpdated = LocalDateTime.now();
+        if (addedDate == null) {
+            addedDate = LocalDate.now();
+        }
     }
 
     @PreUpdate

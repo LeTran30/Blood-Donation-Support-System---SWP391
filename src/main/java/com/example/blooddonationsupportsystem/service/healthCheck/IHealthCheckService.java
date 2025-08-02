@@ -10,4 +10,6 @@ public interface IHealthCheckService {
     ResponseEntity<?> createHealthCheck(@Valid HealthCheckRequest request);
 
     ResponseEntity<?> getHealthChecksByUserId(Integer userId, int page, int size);
+
+    ResponseEntity<?> getHealthCheckById(Integer healthCheckId);
 }

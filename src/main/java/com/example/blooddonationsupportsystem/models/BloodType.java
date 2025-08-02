@@ -23,6 +23,12 @@ public class BloodType extends BaseEntity{
     @Column(nullable = false, unique = true)
     private String typeName;
 
+    @Column(nullable = true)
+    private String canDonateTo;
+
+    @Column(nullable = true)
+    private String canReceiveFrom;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "blood_type_components", // phải đúng tên bảng
