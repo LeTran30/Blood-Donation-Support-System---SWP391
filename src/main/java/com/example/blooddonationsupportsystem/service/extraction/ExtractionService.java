@@ -10,6 +10,7 @@ import com.example.blooddonationsupportsystem.utils.InventoryStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -39,9 +40,10 @@ public class ExtractionService implements IExtractionService {
                     .orElseThrow(() -> new RuntimeException("Blood component not found"));
 
             List<Inventory> inventories = inventoryRepository
-                    .findByBloodTypeAndBloodComponentAndExpiryDateGreaterThanEqual(
-                            bloodType, bloodComponent, LocalDate.now()
+                    .findByBloodTypeAndBloodComponentAndStatus(
+                            bloodType, bloodComponent, InventoryStatus.AVAILABLE
                     );
+
             inventories.sort(Comparator.comparing(Inventory::getAddedDate));
 
             int availableVolume = inventories.stream().mapToInt(Inventory::getQuantity).sum();
@@ -78,12 +80,15 @@ public class ExtractionService implements IExtractionService {
 
                 inventoryRepository.save(inventory);
 
-                ExtractionDetail detail = ExtractionDetail.builder()
-                        .extraction(extraction)
-                        .inventory(inventory)
-                        .volumeExtracted(extractVolume)
-                        .build();
-                detailList.add(detail);
+                if (extractVolume > 0) {
+                    ExtractionDetail detail = ExtractionDetail.builder()
+                            .extraction(extraction)
+                            .inventory(inventory)
+                            .volumeExtracted(extractVolume)
+                            .build();
+                    detailList.add(detail);
+                }
+
 
                 remaining -= extractVolume;
             }
@@ -121,28 +126,34 @@ public class ExtractionService implements IExtractionService {
 
     @Override
     public ResponseEntity<?> getAllExtractions(Integer bloodTypeId, Integer bloodComponentId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Extraction> pageResult;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
 
-        if (bloodTypeId != null && bloodComponentId != null) {
-            pageResult = extractionRepository.findByBloodType_BloodTypeIdAndBloodComponent_ComponentId(bloodTypeId, bloodComponentId, pageable);
-        } else if (bloodTypeId != null) {
-            pageResult = extractionRepository.findByBloodType_BloodTypeId(bloodTypeId, pageable);
-        } else if (bloodComponentId != null) {
-            pageResult = extractionRepository.findByBloodComponent_ComponentId(bloodComponentId, pageable);
-        } else {
-            pageResult = extractionRepository.findAll(pageable);
+        Specification<Extraction> spec = (root, query, builder) -> null;
+        if (bloodTypeId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("bloodType").get("bloodTypeId"), bloodTypeId));
+        }
+        if (bloodComponentId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("bloodComponent").get("componentId"), bloodComponentId));
         }
 
-        List<ExtractionResponse> list = pageResult.getContent().stream().map(this::mapToResponse).collect(Collectors.toList());
+        Page<Extraction> pageResult = extractionRepository.findAll(spec, pageable);
+        List<ExtractionResponse> list = pageResult.getContent().stream().map(this::mapToResponse).toList();
+
         Map<String, Object> response = new HashMap<>();
         response.put("content", list);
         response.put("totalItems", pageResult.getTotalElements());
         response.put("totalPages", pageResult.getTotalPages());
         response.put("currentPage", page);
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("List extractions").data(response).build());
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("List extractions")
+                .data(response)
+                .build());
     }
+
 
     @Override
     public ResponseEntity<?> getExtractionDetailsByExtractionId(Integer extractionId) {
