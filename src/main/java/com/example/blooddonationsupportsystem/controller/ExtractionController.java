@@ -51,13 +51,14 @@ public class ExtractionController {
     @GetMapping
     @PreAuthorize("true")
     public ResponseEntity<?> getAllExtractions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer bloodTypeId,
-            @RequestParam(required = false) Integer bloodComponentId
+            @RequestParam(required = false) Integer bloodComponentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return extractionService.getAllExtractions(page, size, bloodTypeId, bloodComponentId);
+        return extractionService.getAllExtractions(bloodTypeId, bloodComponentId, page, size);
     }
+
 
     @GetMapping("/{extractionId}/details")
     @PreAuthorize("true")
