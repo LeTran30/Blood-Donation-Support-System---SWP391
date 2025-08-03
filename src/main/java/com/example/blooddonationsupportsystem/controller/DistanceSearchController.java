@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.distanceSearch.DistanceSearchRequest;
+import com.example.blooddonationsupportsystem.dtos.request.donorSearch.DonorSearchRequest;
 import com.example.blooddonationsupportsystem.service.distanceSearch.IDistanceSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,14 @@ public class DistanceSearchController {
 
     @Operation(summary = "Get search history", description = "Returns previous nearby donor search history by user ID.")
     @GetMapping("/api/users/{userId}/distance-search")
+    @PreAuthorize("true")
     public ResponseEntity<?> getSearchHistory(@PathVariable Integer userId) {
         return distanceSearchService.getSearchHistory(userId);
+    }
+
+    @PostMapping("/donor-nearby")
+    @PreAuthorize("true")
+    public ResponseEntity<?> searchDonorNearby(@RequestBody DonorSearchRequest request) {
+        return distanceSearchService.searchDonorNearby(request);
     }
 }

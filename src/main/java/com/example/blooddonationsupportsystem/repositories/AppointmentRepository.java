@@ -14,4 +14,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     Page<Appointment> findAllByUserId(Integer userId,
                                       Pageable pageable);
 
+    Appointment findTopByUserIdOrderByAppointmentDateDesc(Integer id);
 }

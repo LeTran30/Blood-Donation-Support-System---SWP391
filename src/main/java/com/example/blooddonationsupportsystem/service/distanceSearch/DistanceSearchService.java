@@ -1,14 +1,19 @@
 package com.example.blooddonationsupportsystem.service.distanceSearch;
 
 import com.example.blooddonationsupportsystem.dtos.request.distanceSearch.DistanceSearchRequest;
+import com.example.blooddonationsupportsystem.dtos.request.donorSearch.DonorSearchRequest;
+import com.example.blooddonationsupportsystem.dtos.responses.donorSearch.DonorSearchResponse;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.distanceSearch.DistanceSearchResponse;
+import com.example.blooddonationsupportsystem.models.Appointment;
 import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.DistanceSearch;
 import com.example.blooddonationsupportsystem.models.User;
+import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
 import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.DistanceSearchRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.utils.Role;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -16,10 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class DistanceSearchService implements IDistanceSearchService {
@@ -27,6 +35,7 @@ public class DistanceSearchService implements IDistanceSearchService {
     private final DistanceSearchRepository distanceSearchRepository;
     private final UserRepository userRepository;
     private final BloodTypeRepository bloodTypeRepository;
+    private final AppointmentRepository appointmentRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -120,14 +129,67 @@ public class DistanceSearchService implements IDistanceSearchService {
                 .build());
     }
 
+    @Override
+    public ResponseEntity<?> searchDonorNearby(DonorSearchRequest request) {
+        try {
+            BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
+                    .orElseThrow(() -> new RuntimeException("BloodType not found"));
+
+            LocalDate today = LocalDate.now();
+            LocalDate threeMonthsAgo = today.minusMonths(3);
+            LocalDateTime cutoffDate = threeMonthsAgo.atStartOfDay(); // => LocalDateTime
+
+            List<User> donors = userRepository.findAllByRoleAndBloodType_BloodTypeId(Role.MEMBER, bloodType.getBloodTypeId());
+
+            List<DonorSearchResponse> results = donors.stream()
+                    .filter(user -> user.getLatitude() != null && user.getLongitude() != null)
+                    .filter(user -> {
+                        Appointment latest = appointmentRepository.findTopByUserIdOrderByAppointmentDateDesc(user.getId());
+                        return latest == null || !latest.getAppointmentDate().isAfter(cutoffDate);
+                    })
+                    .map(user -> {
+                        double distance = calculateDistance(
+                                request.getLatitude(), request.getLongitude(),
+                                user.getLatitude(), user.getLongitude());
+
+                        return DonorSearchResponse.builder()
+                                .userId(user.getId())
+                                .fullName(user.getFullName())
+                                .email(user.getEmail())
+                                .latitude(user.getLatitude())
+                                .longitude(user.getLongitude())
+                                .distanceKM(distance)
+                                .build();
+                    })
+                    .sorted(Comparator.comparingDouble(DonorSearchResponse::getDistanceKM))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("List of matching donors")
+                            .data(results)
+                            .build());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Error: " + e.getMessage())
+                            .build());
+        }
+    }
+
+
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371; // Earth radius in KM
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2)
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon/2) * Math.sin(dLon/2);
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
+
 }
