@@ -1,8 +1,9 @@
-package com.example.blooddonationsupportsystem.dtos.responses.extract;
+package com.example.blooddonationsupportsystem.dtos.responses.extraction;
 
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -10,14 +11,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ExtractResponse {
-    private Integer extractId;
-    private Integer inventoryId; // Can be null
+public class ExtractionResponse {
+    private Integer extractionId;
     private Integer bloodTypeId;
     private String bloodTypeName;
     private Integer bloodComponentId;
     private String bloodComponentName;
-    private Integer volumeExtracted;
+    private Integer totalVolumeExtraction;
+    private String notes;
+    private List<ExtractionDetailResponse> details;
     private LocalDateTime extractedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

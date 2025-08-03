@@ -3,11 +3,14 @@ package com.example.blooddonationsupportsystem.service.inventory;
 import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.inventory.InventoryResponse;
+import com.example.blooddonationsupportsystem.models.BloodComponent;
 import com.example.blooddonationsupportsystem.models.BloodDonation;
 import com.example.blooddonationsupportsystem.models.BloodType;
 import com.example.blooddonationsupportsystem.models.Inventory;
+import com.example.blooddonationsupportsystem.repositories.BloodComponentRepository;
 import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.InventoryRepository;
+import com.example.blooddonationsupportsystem.utils.InventoryStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,6 +33,7 @@ public class InventoryService implements IInventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final BloodTypeRepository bloodTypeRepository;
+    private final BloodComponentRepository bloodComponentRepository;
 
     @Override
     public Page<InventoryResponse> getAllInventory(int page, int size) {
@@ -38,6 +43,7 @@ public class InventoryService implements IInventoryService {
                 .stream()
                 .map(inventory -> InventoryResponse.builder()
                         .id(inventory.getInventoryId())
+                        .componentId(inventory.getBloodComponent().getComponentId())
                         .bloodTypeId(inventory.getBloodType().getBloodTypeId())
                         .quantity(inventory.getQuantity())
                         .lastUpdated(inventory.getLastUpdated())
@@ -55,6 +61,7 @@ public class InventoryService implements IInventoryService {
         return InventoryResponse.builder()
                 .id(inventory.getInventoryId())
                 .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .componentId(inventory.getBloodComponent().getComponentId())
                 .quantity(inventory.getQuantity())
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
@@ -66,6 +73,9 @@ public class InventoryService implements IInventoryService {
     public InventoryResponse createInventory(InventoryRequest request) {
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
                 .orElseThrow(() -> new RuntimeException("Cannot find blood type with id: " + request.getBloodTypeId()));
+
+        BloodComponent component = bloodComponentRepository.findById(request.getComponentId())
+                .orElseThrow(() -> new RuntimeException("Cannot find blood component with id: " + request.getComponentId()));
 
         // Check if inventory already exists for this blood type
         Optional<Inventory> optionalInventory = inventoryRepository.findByBloodType(bloodType);
@@ -83,6 +93,7 @@ public class InventoryService implements IInventoryService {
             // If not exists, create new
             inventory = Inventory.builder()
                     .bloodType(bloodType)
+                    .bloodComponent(component)
                     .quantity(request.getQuantity())
                     .addedDate(request.getAddedDate())
                     .expiryDate(request.getExpiryDate())
@@ -94,6 +105,7 @@ public class InventoryService implements IInventoryService {
         return InventoryResponse.builder()
                 .id(inventory.getInventoryId())
                 .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .componentId(inventory.getBloodComponent().getComponentId())
                 .quantity(inventory.getQuantity())
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
@@ -110,8 +122,13 @@ public class InventoryService implements IInventoryService {
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Cannot find blood type with id: " + request.getBloodTypeId()));
-
+        BloodComponent component = bloodComponentRepository.findById(request.getComponentId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cannot find blood component with id: " + request.getComponentId()
+                        ));
         inventory.setBloodType(bloodType);
+        inventory.setBloodComponent(component);
         inventory.setQuantity(request.getQuantity());
         inventory.setAddedDate(request.getAddedDate());
         inventory.setExpiryDate(request.getExpiryDate());
@@ -122,6 +139,7 @@ public class InventoryService implements IInventoryService {
         return InventoryResponse.builder()
                 .id(inventory.getInventoryId())
                 .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                .componentId(inventory.getBloodComponent().getComponentId())
                 .quantity(inventory.getQuantity())
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
@@ -156,13 +174,14 @@ public class InventoryService implements IInventoryService {
     public List<InventoryResponse> findByBloodTypeAndNotExpired(Integer bloodTypeId, LocalDate date) {
         BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
                 .orElseThrow(() -> new RuntimeException("Cannot find blood type with id: " + bloodTypeId));
-        
+
         List<Inventory> inventories = inventoryRepository.findByBloodTypeAndExpiryDateGreaterThanEqual(bloodType, date);
         
         return inventories.stream()
                 .map(inventory -> InventoryResponse.builder()
                         .id(inventory.getInventoryId())
                         .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                        .componentId(inventory.getBloodComponent().getComponentId())
                         .quantity(inventory.getQuantity())
                         .lastUpdated(inventory.getLastUpdated())
                         .addedDate(inventory.getAddedDate())
@@ -179,6 +198,7 @@ public class InventoryService implements IInventoryService {
                 .map(inventory -> InventoryResponse.builder()
                         .id(inventory.getInventoryId())
                         .bloodTypeId(inventory.getBloodType().getBloodTypeId())
+                        .componentId(inventory.getBloodComponent().getComponentId())
                         .quantity(inventory.getQuantity())
                         .lastUpdated(inventory.getLastUpdated())
                         .addedDate(inventory.getAddedDate())
@@ -191,6 +211,7 @@ public class InventoryService implements IInventoryService {
     @Override
     public void updateInventoryAfterDonation(BloodDonation bloodDonation) {
         BloodType bloodType = bloodDonation.getBloodType();
+        BloodComponent bloodComponent = bloodDonation.getBloodComponent();
         Integer volume = bloodDonation.getVolumeMl();
         
         // Calculate expiry date (e.g., 35 days from now)
@@ -200,6 +221,7 @@ public class InventoryService implements IInventoryService {
                 .orElseGet(() -> {
                     Inventory newInventory = Inventory.builder()
                             .bloodType(bloodType)
+                            .bloodComponent(bloodComponent)
                             .quantity(0)
                             .addedDate(LocalDate.now())
                             .expiryDate(expiryDate)
@@ -216,5 +238,27 @@ public class InventoryService implements IInventoryService {
         }
 
         inventoryRepository.save(inventory);
+    }
+
+    private InventoryStatus determineStatus(Integer quantity, LocalDate expiryDate) {
+        if (quantity == 0) return InventoryStatus.USED;
+        if (expiryDate.isBefore(LocalDate.now())) return InventoryStatus.EXPIRED;
+        return InventoryStatus.AVAILABLE;
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy mỗi ngày lúc 00:00
+    @Transactional
+    public void updateExpiredInventories() {
+        LocalDate today = LocalDate.now();
+        List<Inventory> expiredInventories = inventoryRepository.findByExpiryDateBefore(today);
+
+        for (Inventory inventory : expiredInventories) {
+            if (inventory.getStatus() != InventoryStatus.EXPIRED) {
+                inventory.setStatus(InventoryStatus.EXPIRED);
+                inventory.setLastUpdated(LocalDateTime.now());
+            }
+        }
+
+        inventoryRepository.saveAll(expiredInventories);
     }
 }

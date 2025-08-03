@@ -1,4 +1,4 @@
-package com.example.blooddonationsupportsystem.dtos.request.extract;
+package com.example.blooddonationsupportsystem.dtos.request.extraction;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ExtractRequest {
+public class ExtractionRequest {
     
     private Integer inventoryId; // Can be null
     
@@ -24,7 +24,10 @@ public class ExtractRequest {
     
     @NotNull(message = "Volume extracted is required")
     @Min(value = 1, message = "Volume extracted must be greater than 0")
-    private Integer volumeExtracted;
-    
+    private Integer totalVolumeExtraction;
+
+    private String notes;
+
+    @NotNull
     private LocalDateTime extractedAt; // If null, current time will be used
 }
