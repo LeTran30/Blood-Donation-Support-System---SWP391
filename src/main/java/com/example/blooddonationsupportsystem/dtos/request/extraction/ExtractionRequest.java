@@ -1,6 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.request.extraction;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -21,7 +21,7 @@ public class ExtractionRequest {
     private Integer bloodComponentId;
     
     @NotNull(message = "Thể tích máu trích xuất không được để trống")
-    @Min(value = 250, message = "Thể tích máu trích xuất tối thiểu là 250ml")
+    @Positive(message = "Thể tích máu trích xuất là một số nguyên dương")
     private Integer totalVolumeExtraction;
 
     private String notes;
