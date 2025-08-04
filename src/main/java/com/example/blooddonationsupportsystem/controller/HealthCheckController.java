@@ -24,6 +24,7 @@ public class HealthCheckController {
     private final IHealthCheckService healthCheckService;
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('member:create', 'staff:create', 'admin:create')")
     public ResponseEntity<?> submitHealthCheck(
             @Valid @RequestBody HealthCheckRequest healthCheckRequest,
             BindingResult result
@@ -54,13 +55,13 @@ public class HealthCheckController {
     }
 
     @GetMapping("/health-checks/{id}")
-    @PreAuthorize("hasAnyAuthority('staff:read', 'admin:read')")
+    @PreAuthorize("hasAnyAuthority('staff:read', 'admin:read', 'member:read')")
     public ResponseEntity<?> getHealthCheckById(@PathVariable("id") Integer id) {
         return healthCheckService.getHealthCheckById(id);
     }
 
     @GetMapping("/health-checks/by-appointment/{appointmentId}")
-    @PreAuthorize("hasAnyAuthority('staff:read', 'admin:read')")
+    @PreAuthorize("hasAnyAuthority('staff:read', 'admin:read', 'member:read')")
     public ResponseEntity<?> getHealthCheckByAppointmentId(@PathVariable("appointmentId") Integer id) {
         return healthCheckService.getByAppointmentId(id);
     }

@@ -50,6 +50,8 @@ public class InventoryService implements IInventoryService {
                         .lastUpdated(inventory.getLastUpdated())
                         .addedDate(inventory.getAddedDate())
                         .expiryDate(inventory.getExpiryDate())
+                        .batchNumber(inventory.getBatchNumber())
+                        .status(inventory.getStatus())
                         .build())
                 .toList();
         return new PageImpl<>(responseList, pageRequest, inventoryPage.getTotalElements());
@@ -67,6 +69,8 @@ public class InventoryService implements IInventoryService {
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
                 .expiryDate(inventory.getExpiryDate())
+                .batchNumber(inventory.getBatchNumber())
+                .status(inventory.getStatus())
                 .build();
     }
 

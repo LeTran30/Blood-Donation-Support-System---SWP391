@@ -50,14 +50,6 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             }
 
             Appointment appointment = appointmentOpt.get();
-            if (appointment.getStatus() != AppointmentStatus.COMPLETED) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Cannot create blood donation information for an appointment that is not completed")
-                                .build()
-                );
-            }
 
             // Cho phép bloodTypeId = null
             BloodType bloodType = null;

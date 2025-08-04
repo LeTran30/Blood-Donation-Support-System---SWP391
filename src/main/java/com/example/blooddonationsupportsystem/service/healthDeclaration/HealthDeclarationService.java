@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.service.healthDeclaration;
 
 import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.healthDeclaration.HealthDeclarationResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
@@ -173,7 +174,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
         }
     }
     @Override
-    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationRequest request, Integer userId, Role role) {
+    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationUpdateRequest request, Integer userId, Role role) {
         try {
             Optional<HealthDeclaration> declarationOpt = healthDeclarationRepository.findById(healthDeclarationId);
             if (declarationOpt.isEmpty()) {
@@ -193,15 +194,6 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                         ResponseObject.builder()
                                 .status(HttpStatus.FORBIDDEN)
                                 .message("You are not authorized to update this health declaration")
-                                .build()
-                );
-            }
-
-            if (!appointment.getAppointmentId().equals(request.getAppointmentId())) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Appointment ID mismatch")
                                 .build()
                 );
             }

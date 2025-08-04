@@ -199,15 +199,6 @@ public class HealthCheckService implements IHealthCheckService {
                 .weight(healthCheck.getWeight())
                 .suggestBloodVolume(healthCheck.getSuggestBloodVolume())
                 .checkedAt(healthCheck.getCheckedAt());
-
-        // Add blood type information if available
-        User user = healthCheck.getUser();
-        if (user != null && user.getBloodType() != null) {
-            BloodType bloodType = user.getBloodType();
-            builder.bloodTypeId(bloodType.getBloodTypeId())
-                   .bloodTypeName(bloodType.getTypeName());
-        }
-
         return builder.build();
     }
 }

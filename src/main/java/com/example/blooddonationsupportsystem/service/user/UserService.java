@@ -367,6 +367,8 @@ public class UserService implements IUserService {
                           .latitude(user.getLatitude())
                           .longitude(user.getLongitude())
                           .dateOfBirth(user.getDateOfBirth())
+                          .job(user.getJob())
+                          .citizenId(user.getCitizenId())
                           .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
                           .build();
     }

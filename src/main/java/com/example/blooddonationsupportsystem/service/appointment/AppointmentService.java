@@ -116,7 +116,7 @@ public class AppointmentService implements IAppointmentService{
         Appointment appointment = optionalAppointment.get();
 
         try {
-            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            if (appointment.getStatus() == AppointmentStatus.MEDICAL_COMPLETED) {
                 LocalDate completedDate = appointment.getAppointmentDate().toLocalDate();
                 reminderService.createNextDonationReminder(appointment.getUser().getId(), completedDate);
             }

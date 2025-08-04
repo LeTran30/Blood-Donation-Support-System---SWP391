@@ -22,8 +22,4 @@ public class HealthCheckResponse {
     private String ineligibleReason;
     private Double weight;
     private String suggestBloodVolume;
-
-    // User's blood type information
-    private Integer bloodTypeId;
-    private String bloodTypeName;
 }

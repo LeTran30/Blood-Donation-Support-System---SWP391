@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
@@ -94,7 +95,7 @@ public class HealthDeclarationController {
     @PreAuthorize("hasAnyAuthority('member:update', 'staff:update')")
     public ResponseEntity<?> updateHealthDeclaration(
             @PathVariable("id") Integer id,
-            @RequestBody HealthDeclarationRequest request,
+            @RequestBody HealthDeclarationUpdateRequest request,
             Principal principal
     ) {
         String email = principal.getName();
