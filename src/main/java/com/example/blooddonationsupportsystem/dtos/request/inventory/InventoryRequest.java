@@ -1,8 +1,7 @@
 package com.example.blooddonationsupportsystem.dtos.request.inventory;
 
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -21,15 +20,13 @@ public class InventoryRequest {
     @NotNull
     private Integer componentId;
 
-    @Min(value = 250, message = "Thể tích tối thiểu là 250ml")
-    @Max(value = 1000, message = "Thể tích tối đa là 250ml")
+    @Positive(value = 250, message = "Thể tích là số nguyên dương")
     private Integer quantity;
-    
     @NotNull
     private LocalDate addedDate;
     
     @NotNull
-    @FutureOrPresent(message = "Ngày quá hạn là ngày trong tương lai")
+    @Future(message = "Ngày quá hạn là ngày trong tương lai")
     private LocalDate expiryDate;
 
     @NotNull(message = "Cần cung cấp mã lô")
