@@ -31,11 +31,8 @@ public class HealthCheckRequest {
     private String ineligibleReason;
 
     @NotNull(message = "Weight must not be null")
-    @Min(value = 45, message = "Weight must be at least 45 kg")
     private Double weight;
 
     private String suggestBloodVolume;
 
-    // Blood type ID to update user's blood type during health check
-    private Integer bloodTypeId;
 }

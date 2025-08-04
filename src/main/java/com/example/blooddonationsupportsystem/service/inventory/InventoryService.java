@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.service.inventory;
 
 import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
+import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.inventory.InventoryResponse;
 import com.example.blooddonationsupportsystem.models.BloodComponent;
@@ -76,29 +77,23 @@ public class InventoryService implements IInventoryService {
 
         BloodComponent component = bloodComponentRepository.findById(request.getComponentId())
                 .orElseThrow(() -> new RuntimeException("Cannot find blood component with id: " + request.getComponentId()));
-
-        // Check if inventory already exists for this blood type
-        Optional<Inventory> optionalInventory = inventoryRepository.findByBloodType(bloodType);
-
-        Inventory inventory;
+        Optional<Inventory> optionalInventory = inventoryRepository
+                .findByBloodTypeAndBloodComponentAndBatchNumber(bloodType, component, request.getBatchNumber());
+        // Lookup by bloodType + component + batchNumber (UNIQUE)
         if (optionalInventory.isPresent()) {
-            // If exists, add to quantity
-            inventory = optionalInventory.get();
-            inventory.setQuantity(inventory.getQuantity() + request.getQuantity());
-            // Update expiry date if the new one is later
-            if (request.getExpiryDate().isAfter(inventory.getExpiryDate())) {
-                inventory.setExpiryDate(request.getExpiryDate());
-            }
-        } else {
-            // If not exists, create new
-            inventory = Inventory.builder()
-                    .bloodType(bloodType)
-                    .bloodComponent(component)
-                    .quantity(request.getQuantity())
-                    .addedDate(request.getAddedDate())
-                    .expiryDate(request.getExpiryDate())
-                    .build();
+            throw new RuntimeException("Blood inventory with the same batch number already exists. Cannot create duplicate.");
+
         }
+
+        Inventory inventory = Inventory.builder()
+                .bloodType(bloodType)
+                .bloodComponent(component)
+                .quantity(request.getQuantity())
+                .batchNumber(request.getBatchNumber())
+                .addedDate(request.getAddedDate())
+                .expiryDate(request.getExpiryDate())
+                .status(InventoryStatus.AVAILABLE)
+                .build();
 
         inventoryRepository.save(inventory);
 
@@ -110,11 +105,14 @@ public class InventoryService implements IInventoryService {
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
                 .expiryDate(inventory.getExpiryDate())
+                .batchNumber(inventory.getBatchNumber())
+                .status(inventory.getStatus())
                 .build();
     }
 
+
     @Override
-    public InventoryResponse updateInventory(Integer id, InventoryRequest request) {
+    public InventoryResponse updateInventory(Integer id, InventoryUpdateRequest request) {
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
 
@@ -133,7 +131,9 @@ public class InventoryService implements IInventoryService {
         inventory.setAddedDate(request.getAddedDate());
         inventory.setExpiryDate(request.getExpiryDate());
         inventory.setLastUpdated(LocalDateTime.now());
-        
+        if (inventory.getStatus() == InventoryStatus.USED && request.getQuantity() > 0) {
+            inventory.setStatus(InventoryStatus.AVAILABLE);
+        }
         inventoryRepository.save(inventory);
         
         return InventoryResponse.builder()
@@ -144,6 +144,8 @@ public class InventoryService implements IInventoryService {
                 .lastUpdated(inventory.getLastUpdated())
                 .addedDate(inventory.getAddedDate())
                 .expiryDate(inventory.getExpiryDate())
+                .batchNumber(inventory.getBatchNumber())
+                .status(inventory.getStatus())
                 .build();
     }
     
@@ -186,6 +188,8 @@ public class InventoryService implements IInventoryService {
                         .lastUpdated(inventory.getLastUpdated())
                         .addedDate(inventory.getAddedDate())
                         .expiryDate(inventory.getExpiryDate())
+                        .batchNumber(inventory.getBatchNumber())
+                        .status(inventory.getStatus())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -202,6 +206,8 @@ public class InventoryService implements IInventoryService {
                         .quantity(inventory.getQuantity())
                         .lastUpdated(inventory.getLastUpdated())
                         .addedDate(inventory.getAddedDate())
+                        .batchNumber(inventory.getBatchNumber())
+                        .status(inventory.getStatus())
                         .expiryDate(inventory.getExpiryDate())
                         .build())
                 .collect(Collectors.toList());

@@ -45,6 +45,8 @@ public class BloodTypeService implements IBloodTypeService {
     public BloodTypeResponse createBloodType(BloodTypeRequest request) {
         BloodType bloodType = BloodType.builder()
                 .typeName(request.getTypeName())
+                .canDonateTo(request.getCanDonateTo())
+                .canReceiveFrom(request.getCanReceiveFrom())
                 .build();
 
         Set<BloodComponent> components = fetchComponentsByIds(request.getComponentIds());
@@ -60,6 +62,8 @@ public class BloodTypeService implements IBloodTypeService {
                 .orElseThrow(() -> new EntityNotFoundException("BloodType not found"));
 
         bloodType.setTypeName(request.getTypeName());
+        bloodType.setCanDonateTo(request.getCanDonateTo());
+        bloodType.setCanReceiveFrom(request.getCanReceiveFrom());
         Set<BloodComponent> components = fetchComponentsByIds(request.getComponentIds());
         bloodType.setComponents(components);
 
@@ -86,6 +90,8 @@ public class BloodTypeService implements IBloodTypeService {
                 .id(bloodType.getBloodTypeId())
                 .typeName(bloodType.getTypeName())
                 .components(componentResponses)
+                .canDonateTo(bloodType.getCanDonateTo())
+                .canReceiveFrom(bloodType.getCanReceiveFrom())
                 .build();
     }
 

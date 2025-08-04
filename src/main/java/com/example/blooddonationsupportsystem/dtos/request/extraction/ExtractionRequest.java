@@ -13,9 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ExtractionRequest {
-    
-    private Integer inventoryId; // Can be null
-    
+
     @NotNull(message = "Blood type ID is required")
     private Integer bloodTypeId;
     

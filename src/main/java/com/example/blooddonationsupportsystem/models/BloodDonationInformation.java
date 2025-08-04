@@ -22,7 +22,7 @@ public class BloodDonationInformation extends BaseEntity {
     private Appointment appointment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blood_type_id", nullable = false)
+    @JoinColumn(name = "blood_type_id")
     private BloodType bloodType;
 
     @Min(1)

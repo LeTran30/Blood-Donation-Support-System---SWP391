@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryRequest;
+import com.example.blooddonationsupportsystem.dtos.request.inventory.InventoryUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.inventory.InventoryResponse;
 import com.example.blooddonationsupportsystem.service.inventory.IInventoryService;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,7 @@ public class InventoryController {
     private final IInventoryService inventoryService;
 
     @PostMapping
-//    @PreAuthorize("permitAll()")
+    @PreAuthorize("true")
     public ResponseEntity<?> addInventory(
             @Valid @RequestBody InventoryRequest inventoryRequest,
             BindingResult result
@@ -56,7 +58,7 @@ public class InventoryController {
 //    @PreAuthorize("permitAll()")
     public ResponseEntity<?> updateInventory(
             @PathVariable Integer id,
-            @Valid @RequestBody InventoryRequest inventoryRequest,
+            @Valid @RequestBody InventoryUpdateRequest inventoryRequest,
             BindingResult result
     ) {
         if (result.hasErrors()) {

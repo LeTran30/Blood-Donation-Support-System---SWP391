@@ -38,72 +38,45 @@ public class CertificateService implements ICertificateService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> generateCertificateForDonation(Integer bloodDonationInforId) {
-        try {
-            // Find blood donation information
-            Optional<BloodDonationInformation> bloodDonationInforOpt = bloodDonationInformationRepository.findById(bloodDonationInforId);
-            if (bloodDonationInforOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Blood donation information not found")
-                                .build()
-                );
-            }
+    public CertificateResponse generateCertificateForDonation(Integer bloodDonationInforId) {
+        BloodDonationInformation bloodDonationInformation = bloodDonationInformationRepository
+                .findById(bloodDonationInforId)
+                .orElseThrow(() -> new IllegalArgumentException("Blood donation information not found"));
 
-            BloodDonationInformation bloodDonationInformation = bloodDonationInforOpt.get();
-            User user = bloodDonationInformation.getAppointment().getUser();
-            
-            // Get total blood volume donated by user
-            Integer totalVolume = bloodDonationInformationRepository.getTotalBloodVolumeByUser(user);
-            if (totalVolume == null) {
-                totalVolume = bloodDonationInformation.getActualBloodVolume();
-            }
-            
-            // Check if this is the first donation
-            List<BloodDonationInformation> previousDonations = bloodDonationInformationRepository.findByUserOrderByCreateAtDesc(user);
-            boolean isFirstDonation = previousDonations.size() <= 1; // Including the current one
-            
-            // Generate certificate
-            Certificate certificate = Certificate.builder()
-                    .user(user)
-                    .certificateType(CertificateType.CERTIFICATE) // Default type
-                    .build();
-            certificate.setCreateAt(LocalDateTime.now());
-            // Generate description based on donation details
-            String donationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            String description = String.format(
-                    "This certificate is awarded to %s for donating %d ml of blood on %s.",
-                    user.getFullName(),
-                    bloodDonationInformation.getActualBloodVolume(),
-                    donationDate
-            );
-            
-            // Check if user qualifies for a merit certificate
-            if (totalVolume >= 1000 || (isFirstDonation && bloodDonationInformation.getActualBloodVolume() >= 350)) {
-                certificate.setCertificateType(CertificateType.MERIT);
-                description += " This merit certificate recognizes your outstanding contribution to saving lives through blood donation.";
-            }
-            
-            certificate.setDescription(description);
-            
-            Certificate saved = certificateRepository.save(certificate);
-            
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .status(HttpStatus.CREATED)
-                            .message("Certificate generated successfully")
-                            .data(mapToResponse(saved))
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
-                            .build()
-            );
+        User user = bloodDonationInformation.getAppointment().getUser();
+
+        Integer totalVolume = bloodDonationInformationRepository.getTotalBloodVolumeByUser(user);
+        if (totalVolume == null) {
+            totalVolume = bloodDonationInformation.getActualBloodVolume();
         }
+
+        List<BloodDonationInformation> previousDonations = bloodDonationInformationRepository
+                .findByUserOrderByCreateAtDesc(user);
+        boolean isFirstDonation = previousDonations.size() <= 1;
+
+        Certificate certificate = new Certificate();
+        certificate.setUser(user);
+        certificate.setCertificateType(CertificateType.CERTIFICATE);
+        certificate.setCreateAt(LocalDateTime.now());
+        certificate.setUpdateAt(LocalDateTime.now());
+
+        String donationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String description = String.format(
+                "This certificate is awarded to %s for donating %d ml of blood on %s.",
+                user.getFullName(),
+                bloodDonationInformation.getActualBloodVolume(),
+                donationDate
+        );
+
+        if (totalVolume >= 1000 || (isFirstDonation && bloodDonationInformation.getActualBloodVolume() >= 350)) {
+            certificate.setCertificateType(CertificateType.MERIT);
+            description += " This merit certificate recognizes your outstanding contribution to saving lives through blood donation.";
+        }
+
+        certificate.setDescription(description);
+        Certificate saved = certificateRepository.save(certificate);
+
+        return mapToResponse(saved); // Trả về DTO
     }
 
     @Override
@@ -164,7 +137,7 @@ public class CertificateService implements ICertificateService {
             }
 
             User user = userOpt.get();
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             Page<Certificate> certificatesPage = certificateRepository.findByUser(user, pageable);
             
             List<CertificateResponse> responseList = certificatesPage.getContent().stream()
@@ -223,7 +196,7 @@ public class CertificateService implements ICertificateService {
     @Override
     public ResponseEntity<?> getAllCertificates(int page, int size) {
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             Page<Certificate> certs = certificateRepository.findAll(pageable);
 
             List<CertificateResponse> list = certs.getContent().stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -247,8 +220,9 @@ public class CertificateService implements ICertificateService {
                 .userName(certificate.getUser().getFullName())
                 .certificateType(certificate.getCertificateType())
                 .description(certificate.getDescription())
-                .createAt(certificate.getCreateAt())
-                .updateAt(certificate.getUpdateAt())
+                .createAt(certificate.getCreateAt() != null ? certificate.getCreateAt() : null)
+                .updateAt(certificate.getUpdateAt() != null ? certificate.getUpdateAt() : null)
                 .build();
     }
+
 }

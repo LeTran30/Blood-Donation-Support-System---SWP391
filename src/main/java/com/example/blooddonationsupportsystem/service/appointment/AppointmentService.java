@@ -4,10 +4,8 @@ import com.example.blooddonationsupportsystem.dtos.request.appointment.Appointme
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
-import com.example.blooddonationsupportsystem.models.HealthDeclaration;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
-import com.example.blooddonationsupportsystem.repositories.HealthDeclarationRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.reminder.IReminderService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
@@ -31,7 +29,6 @@ import java.util.*;
 public class AppointmentService implements IAppointmentService{
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
-    private final HealthDeclarationRepository healthDeclarationRepository;
     private final IReminderService reminderService;
     private final ModelMapper modelMapper;
 
@@ -54,23 +51,6 @@ public class AppointmentService implements IAppointmentService{
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
-        
-        // Create health declaration
-        HealthDeclaration healthDeclaration = HealthDeclaration.builder()
-                .appointment(saved)
-                .hasBloodTransmittedDisease(appointmentRequest.getHealthDeclaration().getHasBloodTransmittedDisease())
-                .hasChronicDisease(appointmentRequest.getHealthDeclaration().getHasChronicDisease())
-                .currentMedications(appointmentRequest.getHealthDeclaration().getCurrentMedications())
-                .hasTattooAcupuncture(appointmentRequest.getHealthDeclaration().getHasTattooAcupuncture())
-                .hasRecentVaccine(appointmentRequest.getHealthDeclaration().getHasRecentVaccine())
-                .hasTravelAbroad(appointmentRequest.getHealthDeclaration().getHasTravelAbroad())
-                .hasUnsafeSex(appointmentRequest.getHealthDeclaration().getHasUnsafeSex())
-                .isFirstBlood(appointmentRequest.getHealthDeclaration().getIsFirstBlood())
-                .isPregnantOrBreastfeeding(appointmentRequest.getHealthDeclaration().getIsPregnantOrBreastfeeding())
-                .isMenstruating(appointmentRequest.getHealthDeclaration().getIsMenstruating())
-                .build();
-        
-        healthDeclarationRepository.save(healthDeclaration);
         
         return  ResponseEntity.ok(
                 ResponseObject.builder()

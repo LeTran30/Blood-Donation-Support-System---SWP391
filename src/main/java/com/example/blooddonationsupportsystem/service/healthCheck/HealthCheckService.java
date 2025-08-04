@@ -13,6 +13,7 @@ import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.HealthCheckRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
+import com.example.blooddonationsupportsystem.utils.Gender;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,8 +34,6 @@ import java.util.Optional;
 public class HealthCheckService implements IHealthCheckService {
     private final HealthCheckRepository healthCheckRepository;
     private final AppointmentRepository appointmentRepository;
-    private final BloodTypeRepository bloodTypeRepository;
-    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -53,17 +52,21 @@ public class HealthCheckService implements IHealthCheckService {
             }
 
             User user = appointment.getUser();
+            if (Boolean.TRUE.equals(request.getIsEligible())) {
+                Gender gender = user.getGender(); // giả sử là "MALE" hoặc "FEMALE"
+                Double weight = request.getWeight();
 
-            // Update user's blood type if provided in the request
-            if (request.getBloodTypeId() != null) {
-                Optional<BloodType> bloodType = bloodTypeRepository.findById(request.getBloodTypeId());
-                if (bloodType.isPresent()) {
-                    user.setBloodType(bloodType.get());
-                    userRepository.save(user);
-                } else {
+                if ((gender == Gender.FEMALE) && weight < 42) {
                     return ResponseEntity.badRequest().body(ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Blood type with ID " + request.getBloodTypeId() + " not found")
+                            .message("Females under 42kg are not eligible to donate blood.")
+                            .build());
+                }
+
+                if ((gender == Gender.MALE) && weight < 45) {
+                    return ResponseEntity.badRequest().body(ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Males under 45kg are not eligible to donate blood.")
                             .build());
                 }
             }
@@ -142,18 +145,30 @@ public class HealthCheckService implements IHealthCheckService {
 
     @Override
     public ResponseEntity<?> getByAppointmentId(Integer appointmentId) {
-        Optional<HealthCheck> healthCheckOpt = healthCheckRepository.findByAppointment_AppointmentId(appointmentId);
+        List<HealthCheck> healthChecks = healthCheckRepository.findByAppointment_AppointmentId(appointmentId);
 
-        return healthCheckOpt.map(healthCheck -> ResponseEntity.ok(ResponseObject.builder()
-                .status(HttpStatus.OK)
-                .message("Health check fetched successfully")
-                .data(mapToResponse(healthCheck))
-                .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message("Health check not found for appointment ID: " + appointmentId)
-                .build()));
+        if (healthChecks.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("No health checks found for appointment ID: " + appointmentId)
+                            .build()
+            );
+        }
 
+        List<HealthCheckResponse> responses = healthChecks.stream()
+                .map(this::mapToResponse)
+                .toList();
+
+        return ResponseEntity.ok(
+                ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Health checks fetched successfully")
+                        .data(responses)
+                        .build()
+        );
     }
+
 
     @Override
     public ResponseEntity<?> getHealthCheckById(Integer healthCheckId) {

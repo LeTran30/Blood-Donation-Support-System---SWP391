@@ -1,10 +1,11 @@
 package com.example.blooddonationsupportsystem.service.certificate;
 
+import com.example.blooddonationsupportsystem.dtos.responses.certificate.CertificateResponse;
 import com.example.blooddonationsupportsystem.utils.CertificateType;
 import org.springframework.http.ResponseEntity;
 
 public interface ICertificateService {
-    ResponseEntity<?> generateCertificateForDonation(Integer bloodDonationInforId);
+    CertificateResponse generateCertificateForDonation(Integer bloodDonationInforId);
 
     ResponseEntity<?> updateCertificate(Integer certificateId, String newDescription, CertificateType type);
 
