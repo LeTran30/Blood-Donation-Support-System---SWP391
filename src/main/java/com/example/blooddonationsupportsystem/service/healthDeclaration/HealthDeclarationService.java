@@ -9,6 +9,7 @@ import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
 import com.example.blooddonationsupportsystem.repositories.HealthDeclarationRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.utils.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +30,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
     private final UserRepository userRepository;
 
     @Override
-    public ResponseEntity<?> createHealthDeclaration(HealthDeclarationRequest request) {
+    public ResponseEntity<?> createHealthDeclaration(HealthDeclarationRequest request, Integer userId) {
         try {
             Optional<Appointment> appointmentOpt = appointmentRepository.findById(request.getAppointmentId());
             if (appointmentOpt.isEmpty()) {
@@ -42,7 +43,14 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             }
 
             Appointment appointment = appointmentOpt.get();
-
+            if (!appointment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.FORBIDDEN)
+                                .message("You are not authorized to create health declaration for this appointment")
+                                .build()
+                );
+            }
             // Check if declaration already exists
             if (healthDeclarationRepository.findByAppointment(appointment).isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
@@ -91,22 +99,19 @@ public class HealthDeclarationService implements IHealthDeclarationService {
     public ResponseEntity<?> getHealthDeclarationByAppointmentId(Integer appointmentId) {
         try {
             Optional<HealthDeclaration> healthDeclarationOpt = healthDeclarationRepository.findByAppointmentAppointmentId(appointmentId);
-            if (healthDeclarationOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found for appointment ID: " + appointmentId)
-                                .build()
-                );
-            }
-
-            return ResponseEntity.ok(
+            return healthDeclarationOpt.map(healthDeclaration -> ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
                             .message("Health declaration retrieved successfully")
-                            .data(mapToResponseDTO(healthDeclarationOpt.get()))
+                            .data(mapToResponseDTO(healthDeclaration))
                             .build()
-            );
+            )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Health declaration not found for appointment ID: " + appointmentId)
+                            .build()
+            ));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
@@ -167,9 +172,8 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             );
         }
     }
-
     @Override
-    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationRequest request) {
+    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationRequest request, Integer userId, Role role) {
         try {
             Optional<HealthDeclaration> declarationOpt = healthDeclarationRepository.findById(healthDeclarationId);
             if (declarationOpt.isEmpty()) {
@@ -182,9 +186,18 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             }
 
             HealthDeclaration declaration = declarationOpt.get();
+            Appointment appointment = declaration.getAppointment();
 
-            // Optional: check if appointmentId in request matches current one (if used in frontend form)
-            if (!declaration.getAppointment().getAppointmentId().equals(request.getAppointmentId())) {
+            if (role == Role.MEMBER && !appointment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.FORBIDDEN)
+                                .message("You are not authorized to update this health declaration")
+                                .build()
+                );
+            }
+
+            if (!appointment.getAppointmentId().equals(request.getAppointmentId())) {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
@@ -193,7 +206,6 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 );
             }
 
-            // Update fields
             declaration.setHasBloodTransmittedDisease(request.getHasBloodTransmittedDisease());
             declaration.setHasChronicDisease(request.getHasChronicDisease());
             declaration.setCurrentMedications(request.getCurrentMedications());

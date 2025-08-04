@@ -69,7 +69,8 @@ public class HealthDeclarationController {
     @PreAuthorize("hasAnyAuthority('member:create', 'staff:create')")
     public ResponseEntity<?> createHealthDeclaration(
             @Valid @RequestBody HealthDeclarationRequest request,
-            BindingResult result
+            BindingResult result,
+            Principal principal
     ) {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
@@ -83,17 +84,27 @@ public class HealthDeclarationController {
                             .build()
             );
         }
-        return healthDeclarationService.createHealthDeclaration(request);
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return healthDeclarationService.createHealthDeclaration(request, user.getId());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('member:update', 'staff:update')")
     public ResponseEntity<?> updateHealthDeclaration(
             @PathVariable("id") Integer id,
-            @RequestBody HealthDeclarationRequest request
+            @RequestBody HealthDeclarationRequest request,
+            Principal principal
     ) {
-        return healthDeclarationService.updateHealthDeclaration(id, request);
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return healthDeclarationService.updateHealthDeclaration(id, request, user.getId(), user.getRole());
     }
+
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('member:delete', 'staff:delete')")
     public ResponseEntity<?> deleteHealthDeclaration(@PathVariable("id") Integer id) {

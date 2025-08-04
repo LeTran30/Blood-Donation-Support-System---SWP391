@@ -55,7 +55,7 @@ public class AppointmentService implements IAppointmentService{
         return  ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.CREATED)
-                        .message("Successfully created appointment with health declaration")
+                        .message("Successfully created appointment")
                         .data(mapWithUserId(saved))
                         .build()
         );
