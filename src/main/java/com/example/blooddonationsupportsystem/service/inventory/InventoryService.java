@@ -60,7 +60,7 @@ public class InventoryService implements IInventoryService {
     @Override
     public InventoryResponse getInventoryById(Integer id) {
         Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có ID: " + id));
         return InventoryResponse.builder()
                 .id(inventory.getInventoryId())
                 .bloodTypeId(inventory.getBloodType().getBloodTypeId())
@@ -77,15 +77,15 @@ public class InventoryService implements IInventoryService {
     @Override
     public InventoryResponse createInventory(InventoryRequest request) {
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                .orElseThrow(() -> new RuntimeException("Cannot find blood type with id: " + request.getBloodTypeId()));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu có ID: " + request.getBloodTypeId()));
 
         BloodComponent component = bloodComponentRepository.findById(request.getComponentId())
-                .orElseThrow(() -> new RuntimeException("Cannot find blood component with id: " + request.getComponentId()));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thành phần máu có ID: " + request.getComponentId()));
         Optional<Inventory> optionalInventory = inventoryRepository
                 .findByBloodTypeAndBloodComponentAndBatchNumber(bloodType, component, request.getBatchNumber());
         // Lookup by bloodType + component + batchNumber (UNIQUE)
         if (optionalInventory.isPresent()) {
-            throw new RuntimeException("Blood inventory with the same batch number already exists. Cannot create duplicate.");
+            throw new RuntimeException("Đã tồn tại kho máu có cùng số lô. Không thể tạo bản sao.");
 
         }
 
@@ -118,16 +118,16 @@ public class InventoryService implements IInventoryService {
     @Override
     public InventoryResponse updateInventory(Integer id, InventoryUpdateRequest request) {
         Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có ID: " + id));
 
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Cannot find blood type with id: " + request.getBloodTypeId()));
+                                "Không tìm thấy nhóm máu có ID: " + request.getBloodTypeId()));
         BloodComponent component = bloodComponentRepository.findById(request.getComponentId())
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Cannot find blood component with id: " + request.getComponentId()
+                                "Không tìm thấy thành phần máu có ID: " + request.getComponentId()
                         ));
         inventory.setBloodType(bloodType);
         inventory.setBloodComponent(component);
@@ -157,7 +157,7 @@ public class InventoryService implements IInventoryService {
     public ResponseEntity<ResponseObject> deleteInventory(Integer id) {
         try {
             Inventory inventory = inventoryRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Cannot find inventory with id: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có ID: " + id));
             
             inventoryRepository.delete(inventory);
             
@@ -179,7 +179,7 @@ public class InventoryService implements IInventoryService {
     @Override
     public List<InventoryResponse> findByBloodTypeAndNotExpired(Integer bloodTypeId, LocalDate date) {
         BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
-                .orElseThrow(() -> new RuntimeException("Cannot find blood type with id: " + bloodTypeId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu có ID: " + bloodTypeId));
 
         List<Inventory> inventories = inventoryRepository.findByBloodTypeAndExpiryDateGreaterThanEqual(bloodType, date);
         

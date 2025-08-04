@@ -35,7 +35,7 @@
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Author not found with ID: " + authorId)
+                                .message("Không tìm thấy tác giả có ID: " + authorId)
                                 .build()
                 );
         }
@@ -110,7 +110,7 @@
                         .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                                 ResponseObject.builder()
                                         .status(HttpStatus.NOT_FOUND)
-                                        .message("Blog not found")
+                                        .message("Không tìm thấy blog")
                                         .build()
                         ));
         }
@@ -129,7 +129,7 @@
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Blog not found")
+                                .message("Không tìm thấy blog")
                                 .build()
                 );
                 }
@@ -141,7 +141,7 @@
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
 
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
@@ -151,7 +151,7 @@
                 return ResponseEntity.ok(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("No blogs found for current user")
+                                .message("Không tìm thấy blog nào cho người dùng hiện tại")
                                 .build()
                 );
         }

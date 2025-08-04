@@ -181,7 +181,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found with ID: " + healthDeclarationId)
+                                .message("Không tìm thấy bản khai y tế kèm ID.: " + healthDeclarationId)
                                 .build()
                 );
             }
@@ -193,7 +193,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.FORBIDDEN)
-                                .message("You are not authorized to update this health declaration")
+                                .message("Tài khoản của bạn không có quyền cần thiết để chỉnh sửa bản khai y tế.")
                                 .build()
                 );
             }
@@ -241,7 +241,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
         )).orElseGet(() -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Health declaration not found with ID: " + id)
+                        .message("Không tìm thấy bản khai y tế kèm ID.: " + id)
                         .build()
         ));
 
@@ -255,7 +255,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found with ID: " + healthDeclarationId)
+                                .message("Không tìm thấy bản khai y tế kèm ID.: " + healthDeclarationId)
                                 .build()
                 );
             }

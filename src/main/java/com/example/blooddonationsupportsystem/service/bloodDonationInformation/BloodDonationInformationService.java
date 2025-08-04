@@ -11,6 +11,7 @@ import com.example.blooddonationsupportsystem.repositories.AppointmentRepository
 import com.example.blooddonationsupportsystem.repositories.BloodDonationInformationRepository;
 import com.example.blooddonationsupportsystem.repositories.BloodTypeRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.service.certificate.ICertificateService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
     private final AppointmentRepository appointmentRepository;
     private final BloodTypeRepository bloodTypeRepository;
     private final UserRepository userRepository;
+    private final ICertificateService certificateService;
 
     @Override
     @Transactional
@@ -44,7 +46,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Appointment not found")
+                                .message("Không tìm thấy cuộc hẹn")
                                 .build()
                 );
             }
@@ -59,7 +61,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                     return ResponseEntity.badRequest().body(
                             ResponseObject.builder()
                                     .status(HttpStatus.BAD_REQUEST)
-                                    .message("Blood type not found")
+                                    .message("Không tìm thấy nhóm máu")
                                     .build()
                     );
                 }
@@ -82,13 +84,13 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Blood donation information for this appointment already exists")
+                                .message("Thông tin hiến máu cho cuộc hẹn này đã tồn tại")
                                 .build()
                 );
             }
             appointmentRepository.save(appointment);
             BloodDonationInformation saved = bloodDonationInformationRepository.save(bloodDonationInformation);
-
+            certificateService.generateCertificateForDonation(bloodDonationInformation.getBloodDonationInformationId());
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
@@ -120,7 +122,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Blood donation information not found for appointment ID: " + appointmentId)
+                            .message("Không tìm thấy thông tin hiến máu cho cuộc hẹn có ID: " + appointmentId)
                             .build()
             ));
 
@@ -142,7 +144,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("User not found")
+                                .message("Không tìm thấy người dùng")
                                 .build()
                 );
             }
@@ -187,7 +189,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("User not found")
+                                .message("Không tìm thấy người dùng")
                                 .build()
                 );
             }
@@ -229,7 +231,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Blood donation information not found with ID: " + id)
+                                .message("Không tìm thấy thông tin hiến máu kèm ID: " + id)
                                 .build()
                 );
             }
@@ -243,7 +245,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                     return ResponseEntity.badRequest().body(
                             ResponseObject.builder()
                                     .status(HttpStatus.BAD_REQUEST)
-                                    .message("Blood type not found")
+                                    .message("Không tìm thấy nhóm máu")
                                     .build()
                     );
                 }
@@ -251,10 +253,8 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
 
                 // Auto update user blood type if not set
                 User user = info.getAppointment().getUser();
-                if (user.getBloodType() == null) {
                     user.setBloodType(bloodType);
                     userRepository.save(user);
-                }
             }
 
             info.setBloodType(bloodType); // null cũng được
@@ -289,7 +289,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Blood donation information not found with ID: " + id)
+                                .message("Không tìm thấy thông tin hiến máu kèm ID: " + id)
                                 .build()
                 );
             }

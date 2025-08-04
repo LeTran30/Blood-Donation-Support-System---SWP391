@@ -59,7 +59,7 @@ public class BloodTypeService implements IBloodTypeService {
     @Transactional
     public BloodTypeResponse updateBloodType(Integer id, BloodTypeRequest request) {
         BloodType bloodType = bloodTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("BloodType not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhóm máu"));
 
         bloodType.setTypeName(request.getTypeName());
         bloodType.setCanDonateTo(request.getCanDonateTo());
@@ -74,7 +74,7 @@ public class BloodTypeService implements IBloodTypeService {
     @Transactional
     public void deleteBloodType(Integer id) {
         BloodType bloodType = bloodTypeRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhóm máu có ID: " + id));
         bloodTypeRepository.delete(bloodType);
     }
 
@@ -100,7 +100,7 @@ public class BloodTypeService implements IBloodTypeService {
 
         List<BloodComponent> components = bloodComponentRepository.findAllById(ids);
         if (components.isEmpty()) {
-            throw new EntityNotFoundException("No valid BloodComponent found for provided IDs.");
+            throw new EntityNotFoundException("Không tìm thấy thành phần máu hợp lệ cho ID được cung cấp.");
         }
         return new HashSet<>(components);
     }
@@ -109,7 +109,7 @@ public class BloodTypeService implements IBloodTypeService {
     @Override
     public BloodTypeResponse assignComponentsToBloodType(Integer bloodTypeId, Collection<Integer> componentIds) {
         BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + bloodTypeId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhóm máu có ID: " + bloodTypeId));
 
         Set<BloodComponent> components = fetchComponentsByIds(componentIds);
         bloodType.setComponents(components);
@@ -121,7 +121,7 @@ public class BloodTypeService implements IBloodTypeService {
     @Override
     public BloodTypeResponse removeComponentFromBloodType(Integer bloodTypeId, Integer componentId) {
         BloodType bloodType = bloodTypeRepository.findById(bloodTypeId)
-                .orElseThrow(() -> new EntityNotFoundException("BloodType not found with ID: " + bloodTypeId));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy nhóm máu có ID: " + bloodTypeId));
 
         Set<BloodComponent> components = bloodType.getComponents();
         components.removeIf(c -> c.getComponentId().equals(componentId));

@@ -41,13 +41,13 @@ public class HealthCheckService implements IHealthCheckService {
         try {
             // Find appointment
             Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy cuộc hẹn"));
 
             // Check status
             if (!appointment.getStatus().equals(AppointmentStatus.SCHEDULED)) {
                 return ResponseEntity.badRequest().body(ResponseObject.builder()
                         .status(HttpStatus.BAD_REQUEST)
-                        .message("Cannot perform health check on appointment not marked as SCHEDULED")
+                        .message("Không thể thực hiện kiểm tra sức khỏe theo lịch hẹn vì không có trạng thái SCHEDULED")
                         .build());
             }
 
@@ -59,14 +59,14 @@ public class HealthCheckService implements IHealthCheckService {
                 if ((gender == Gender.FEMALE) && weight < 42) {
                     return ResponseEntity.badRequest().body(ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Females under 42kg are not eligible to donate blood.")
+                            .message("Phụ nữ dưới 42kg không đủ điều kiện hiến máu.")
                             .build());
                 }
 
                 if ((gender == Gender.MALE) && weight < 45) {
                     return ResponseEntity.badRequest().body(ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Males under 45kg are not eligible to donate blood.")
+                            .message("Nam giới dưới 45kg không đủ điều kiện hiến máu.")
                             .build());
                 }
             }
@@ -151,7 +151,7 @@ public class HealthCheckService implements IHealthCheckService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("No health checks found for appointment ID: " + appointmentId)
+                            .message("Không tìm thấy kiểm tra sức khỏe cho cuộc hẹn có ID : " + appointmentId)
                             .build()
             );
         }
@@ -183,7 +183,7 @@ public class HealthCheckService implements IHealthCheckService {
         )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Health check not found with ID: " + healthCheckId)
+                        .message("Không tìm thấy thông tin kiểm tra sức khỏe với ID: " + healthCheckId)
                         .build()
         ));
     }

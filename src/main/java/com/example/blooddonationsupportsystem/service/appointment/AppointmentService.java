@@ -39,7 +39,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
+                            .message("Không tìm thấy người dùng")
                             .build()
             );
         }
@@ -73,7 +73,7 @@ public class AppointmentService implements IAppointmentService{
         )).orElseGet(() -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Appointment not found")
+                        .message("Không tìm thấy cuộc hẹn")
                         .build()
         ));
     }
@@ -83,7 +83,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
+                            .message("Không tìm thấy người dùng")
                             .build()
             );
         }
@@ -108,7 +108,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Appointment not found")
+                            .message("Không tìm thấy cuộc hẹn")
                             .build()
             );
         }
@@ -125,7 +125,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Invalid status value")
+                            .message("Giá trị trạng thái không hợp lệ")
                             .build()
             );
         }
@@ -148,7 +148,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Appointment not found")
+                            .message("Không tìm thấy cuộc hẹn")
                             .build()
             );
         }

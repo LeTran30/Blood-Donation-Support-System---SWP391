@@ -45,7 +45,7 @@ public class BloodComponentService implements IBloodComponentService {
     @Override
     public BloodComponentResponse updateBloodComponent(Integer id, BloodComponentRequest request) {
         BloodComponent existing = bloodComponentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("BloodComponent not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phần máu"));
 
         existing.setComponentName(request.getComponentName());
         bloodComponentRepository.save(existing);
@@ -58,7 +58,7 @@ public class BloodComponentService implements IBloodComponentService {
     @Override
     public void deleteBloodComponent(Integer id) {
         if (!bloodComponentRepository.existsById(id)) {
-            throw new EntityNotFoundException("BloodComponent not found");
+            throw new EntityNotFoundException("Không tìm thấy thành phần máu");
         }
         bloodComponentRepository.deleteById(id);
     }

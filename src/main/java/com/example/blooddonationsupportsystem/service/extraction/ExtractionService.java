@@ -34,10 +34,10 @@ public class ExtractionService implements IExtractionService {
     public ResponseEntity<?> createExtraction(ExtractionRequest request) {
         try {
             BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                    .orElseThrow(() -> new RuntimeException("Blood type not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu"));
 
             BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
-                    .orElseThrow(() -> new RuntimeException("Blood component not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thành phần máu"));
 
             List<Inventory> inventories = inventoryRepository
                     .findByBloodTypeAndBloodComponentAndStatus(
@@ -49,7 +49,7 @@ public class ExtractionService implements IExtractionService {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("There is no suitable blood left in stock.")
+                                .message("Không còn máu phù hợp trong kho.")
                                 .build()
                 );
             }
@@ -61,7 +61,7 @@ public class ExtractionService implements IExtractionService {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Not enough blood to extract. " + (requestedVolume - availableVolume) + " ml short.")
+                                .message("Không đủ máu để trích xuất. Thiếu" + (requestedVolume - availableVolume) + " ml.")
                                 .build()
                 );
             }
@@ -128,7 +128,7 @@ public class ExtractionService implements IExtractionService {
                         .data(mapToResponse(extraction))
                         .build())
         ).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Not found").build()
+                ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy trích xuất").build()
         ));
     }
 
@@ -196,7 +196,7 @@ public class ExtractionService implements IExtractionService {
         Optional<Extraction> opt = extractionRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Extraction not found").build()
+                    ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy trích xuất").build()
             );
         }
 

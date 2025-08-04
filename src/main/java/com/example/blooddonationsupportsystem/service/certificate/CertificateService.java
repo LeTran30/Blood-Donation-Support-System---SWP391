@@ -41,7 +41,7 @@ public class CertificateService implements ICertificateService {
     public CertificateResponse generateCertificateForDonation(Integer bloodDonationInforId) {
         BloodDonationInformation bloodDonationInformation = bloodDonationInformationRepository
                 .findById(bloodDonationInforId)
-                .orElseThrow(() -> new IllegalArgumentException("Blood donation information not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin hiến máu"));
 
         User user = bloodDonationInformation.getAppointment().getUser();
 
@@ -85,7 +85,7 @@ public class CertificateService implements ICertificateService {
             Optional<Certificate> certOpt = certificateRepository.findById(certificateId);
             if (certOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Certificate not found").build()
+                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy chứng chỉ").build()
                 );
             }
 
@@ -109,7 +109,7 @@ public class CertificateService implements ICertificateService {
         try {
             if (!certificateRepository.existsById(certificateId)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Certificate not found").build()
+                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy chứng chỉ").build()
                 );
             }
             certificateRepository.deleteById(certificateId);
@@ -131,7 +131,7 @@ public class CertificateService implements ICertificateService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("User not found")
+                                .message("Không tìm thấy người dùng")
                                 .build()
                 );
             }
@@ -180,7 +180,7 @@ public class CertificateService implements ICertificateService {
             )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Certificate not found")
+                            .message("Không tìm thấy chứng chỉ")
                             .build()
             ));
 

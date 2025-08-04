@@ -45,7 +45,7 @@ public class DistanceSearchService implements IDistanceSearchService {
         if (requester == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder().status(HttpStatus.NOT_FOUND)
-                            .message("User not found").build()
+                            .message("Không tìm thấy người dùng").build()
             );
         }
 
@@ -54,7 +54,7 @@ public class DistanceSearchService implements IDistanceSearchService {
         if (bloodType == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder().status(HttpStatus.NOT_FOUND)
-                            .message("Blood type not found").build()
+                            .message("Không tìm thấy nhóm máu").build()
             );
         }
 
@@ -107,7 +107,7 @@ public class DistanceSearchService implements IDistanceSearchService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
+                            .message("Không tìm thấy người dùng")
                             .build());
         }
 
