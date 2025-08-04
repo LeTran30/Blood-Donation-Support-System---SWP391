@@ -72,7 +72,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                     userRepository.save(user);
                 }
             }
-
+            appointment.setStatus(AppointmentStatus.MEDICAL_COMPLETED);
             BloodDonationInformation bloodDonationInformation = BloodDonationInformation.builder()
                     .appointment(appointment)
                     .bloodType(bloodType) // có thể null
@@ -86,7 +86,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                                 .build()
                 );
             }
-
+            appointmentRepository.save(appointment);
             BloodDonationInformation saved = bloodDonationInformationRepository.save(bloodDonationInformation);
 
             return ResponseEntity.ok(
