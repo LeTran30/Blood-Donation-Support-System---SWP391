@@ -45,6 +45,14 @@ public class ExtractionService implements IExtractionService {
                     );
 
             inventories.sort(Comparator.comparing(Inventory::getAddedDate));
+            if (inventories.isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("There is no suitable blood left in stock.")
+                                .build()
+                );
+            }
 
             int availableVolume = inventories.stream().mapToInt(Inventory::getQuantity).sum();
             int requestedVolume = request.getTotalVolumeExtraction();
@@ -54,14 +62,6 @@ public class ExtractionService implements IExtractionService {
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
                                 .message("Not enough blood to extract. " + (requestedVolume - availableVolume) + " ml short.")
-                                .build()
-                );
-            }
-            if (availableVolume == 0) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("There is no suitable blood left in stock.")
                                 .build()
                 );
             }
