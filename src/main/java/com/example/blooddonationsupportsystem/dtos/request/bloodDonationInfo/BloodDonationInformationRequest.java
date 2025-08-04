@@ -14,7 +14,6 @@ public class BloodDonationInformationRequest {
     @NotNull(message = "Appointment ID is required")
     private Integer appointmentId;
 
-    @NotNull(message = "Blood Type ID is required")
     private Integer bloodTypeId;
 
     @NotNull(message = "Actual blood volume is required")

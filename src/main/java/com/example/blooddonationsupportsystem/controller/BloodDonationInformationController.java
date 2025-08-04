@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.bloodDonationInformation.IBloodDonationInformationService;
 import com.example.blooddonationsupportsystem.utils.Role;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class BloodDonationInformationController {
     @PostMapping
     @PreAuthorize("hasAuthority('staff:create')")
     public ResponseEntity<?> createBloodDonationInfor(
-            @RequestBody BloodDonationInformationRequest request,
+            @Valid @RequestBody BloodDonationInformationRequest request,
             BindingResult result
     ) {
         if (result.hasErrors()) {

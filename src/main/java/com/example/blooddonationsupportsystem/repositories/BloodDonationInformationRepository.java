@@ -19,4 +19,6 @@ public interface BloodDonationInformationRepository extends JpaRepository<BloodD
     
     @Query("SELECT SUM(bdi.actualBloodVolume) FROM BloodDonationInformation bdi WHERE bdi.appointment.user = ?1")
     Integer getTotalBloodVolumeByUser(User user);
+
+    boolean existsByAppointment(Appointment appointment);
 }

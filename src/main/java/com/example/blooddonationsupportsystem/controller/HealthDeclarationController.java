@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.healthDeclaration.IHealthDeclarationService;
 import com.example.blooddonationsupportsystem.utils.Role;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +68,7 @@ public class HealthDeclarationController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('member:create', 'staff:create')")
     public ResponseEntity<?> createHealthDeclaration(
-            @RequestBody HealthDeclarationRequest request,
+            @Valid @RequestBody HealthDeclarationRequest request,
             BindingResult result
     ) {
         if (result.hasErrors()) {

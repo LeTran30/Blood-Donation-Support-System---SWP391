@@ -59,28 +59,41 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 );
             }
 
-            Optional<BloodType> bloodTypeOpt = bloodTypeRepository.findById(request.getBloodTypeId());
-            if (bloodTypeOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Blood type not found")
-                                .build()
-                );
-            }
+            // Cho phép bloodTypeId = null
+            BloodType bloodType = null;
+            if (request.getBloodTypeId() != null) {
+                Optional<BloodType> bloodTypeOpt = bloodTypeRepository.findById(request.getBloodTypeId());
+                if (bloodTypeOpt.isEmpty()) {
+                    return ResponseEntity.badRequest().body(
+                            ResponseObject.builder()
+                                    .status(HttpStatus.BAD_REQUEST)
+                                    .message("Blood type not found")
+                                    .build()
+                    );
+                }
+                bloodType = bloodTypeOpt.get();
 
-            BloodType bloodType = bloodTypeOpt.get();
-            User user = appointment.getUser();
-            if (user.getBloodType() == null) {
-                user.setBloodType(bloodType);
-                userRepository.save(user);
+                // Chỉ auto-update bloodType cho user nếu user chưa có
+                User user = appointment.getUser();
+                if (user.getBloodType() == null) {
+                    user.setBloodType(bloodType);
+                    userRepository.save(user);
+                }
             }
 
             BloodDonationInformation bloodDonationInformation = BloodDonationInformation.builder()
                     .appointment(appointment)
-                    .bloodType(bloodType)
+                    .bloodType(bloodType) // có thể null
                     .actualBloodVolume(request.getActualBloodVolume())
                     .build();
+            if (bloodDonationInformationRepository.existsByAppointment(appointment)) {
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("Blood donation information for this appointment already exists")
+                                .build()
+                );
+            }
 
             BloodDonationInformation saved = bloodDonationInformationRepository.save(bloodDonationInformation);
 
@@ -92,6 +105,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                             .build()
             );
         } catch (Exception e) {
+            e.printStackTrace(); // hoặc dùng logger
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -229,19 +243,31 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             }
 
             BloodDonationInformation info = infoOpt.get();
+            BloodType bloodType = null;
 
-            Optional<BloodType> bloodTypeOpt = bloodTypeRepository.findById(request.getBloodTypeId());
-            if (bloodTypeOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Blood type not found")
-                                .build()
-                );
+            if (request.getBloodTypeId() != null) {
+                Optional<BloodType> bloodTypeOpt = bloodTypeRepository.findById(request.getBloodTypeId());
+                if (bloodTypeOpt.isEmpty()) {
+                    return ResponseEntity.badRequest().body(
+                            ResponseObject.builder()
+                                    .status(HttpStatus.BAD_REQUEST)
+                                    .message("Blood type not found")
+                                    .build()
+                    );
+                }
+                bloodType = bloodTypeOpt.get();
+
+                // Auto update user blood type if not set
+                User user = info.getAppointment().getUser();
+                if (user.getBloodType() == null) {
+                    user.setBloodType(bloodType);
+                    userRepository.save(user);
+                }
             }
 
-            info.setBloodType(bloodTypeOpt.get());
+            info.setBloodType(bloodType); // null cũng được
             info.setActualBloodVolume(request.getActualBloodVolume());
+
             BloodDonationInformation updated = bloodDonationInformationRepository.save(info);
 
             return ResponseEntity.ok(
@@ -252,6 +278,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                             .build()
             );
         } catch (Exception e) {
+            e.printStackTrace(); // hoặc dùng logger
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -284,6 +311,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                             .build()
             );
         } catch (Exception e) {
+            e.printStackTrace(); // hoặc dùng logger
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -334,8 +362,8 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
         return BloodDonationInformationResponse.builder()
                 .bloodDonationInformationId(bloodDonationInformation.getBloodDonationInformationId())
                 .appointmentId(bloodDonationInformation.getAppointment().getAppointmentId())
-                .bloodTypeId(bloodType.getBloodTypeId())
-                .bloodTypeName(bloodType.getTypeName())
+                .bloodTypeId(bloodType != null ? bloodType.getBloodTypeId() : null)
+                .bloodTypeName(bloodType != null ? bloodType.getTypeName() : null)
                 .actualBloodVolume(bloodDonationInformation.getActualBloodVolume())
                 .createdAt(bloodDonationInformation.getCreateAt())
                 .updatedAt(bloodDonationInformation.getUpdateAt())
@@ -343,5 +371,6 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
                 .userName(user.getFullName())
                 .build();
     }
+
 
 }
