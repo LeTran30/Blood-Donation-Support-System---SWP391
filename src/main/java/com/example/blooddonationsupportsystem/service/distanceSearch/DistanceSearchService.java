@@ -96,7 +96,7 @@ public class DistanceSearchService implements IDistanceSearchService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Nearby users found")
+                .message("Đã tìm thấy những người ở gần đây")
                 .data(results)
                 .build());
     }
@@ -124,7 +124,7 @@ public class DistanceSearchService implements IDistanceSearchService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Search history retrieved successfully")
+                .message("Truy xuất lịch sử tìm kiếm thành công")
                 .data(responseList)
                 .build());
     }
@@ -133,7 +133,7 @@ public class DistanceSearchService implements IDistanceSearchService {
     public ResponseEntity<?> searchDonorNearby(DonorSearchRequest request) {
         try {
             BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                    .orElseThrow(() -> new RuntimeException("BloodType not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu"));
 
             LocalDate today = LocalDate.now();
             LocalDate threeMonthsAgo = today.minusMonths(3);
@@ -167,7 +167,7 @@ public class DistanceSearchService implements IDistanceSearchService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("List of matching donors")
+                            .message("Truy xuất các người hiến thành công")
                             .data(results)
                             .build());
 
@@ -175,7 +175,7 @@ public class DistanceSearchService implements IDistanceSearchService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build());
         }
     }

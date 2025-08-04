@@ -52,7 +52,7 @@
                 return ResponseEntity.status(HttpStatus.CREATED).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.CREATED)
-                                .message("Blog created successfully")
+                                .message("Tạo blog thành công")
                                 .data(response)
                                 .build()
                 );
@@ -68,7 +68,7 @@
                 return ResponseEntity.ok(
                         ResponseObject.builder()
                                 .status(HttpStatus.OK)
-                                .message("Successfully retrieved all blogs")
+                                .message("Truy xuất tất cả blog thành công")
                                 .data(blogResponses)
                                 .build()
                 );
@@ -80,14 +80,14 @@
                         .map(blog -> ResponseEntity.ok(
                                 ResponseObject.builder()
                                         .status(HttpStatus.OK)
-                                        .message("Successfully retrieved blog")
+                                        .message("Truy xuất blog thành công")
                                         .data(toBlogResponse(blog))
                                         .build()
                         ))
                         .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                                 ResponseObject.builder()
                                         .status(HttpStatus.NOT_FOUND)
-                                        .message("Blog not found")
+                                        .message("Không tìm thấy blog")
                                         .build()
                         ));
         }
@@ -102,7 +102,7 @@
                         return ResponseEntity.ok(
                                 ResponseObject.builder()
                                         .status(HttpStatus.OK)
-                                        .message("Blog updated successfully")
+                                        .message("Cập nhật blog thành công")
                                         .data(toBlogResponse(updated))
                                         .build()
                         );
@@ -122,7 +122,7 @@
                 return ResponseEntity.ok(
                         ResponseObject.builder()
                                 .status(HttpStatus.OK)
-                                .message("Blog deleted")
+                                .message("Xóa blog thành công")
                                 .build()
                 );
                 } else {
@@ -151,7 +151,7 @@
                 return ResponseEntity.ok(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Không tìm thấy blog nào cho người dùng hiện tại")
+                                .message("Không tìm thấy blog nào của người dùng hiện tại")
                                 .build()
                 );
         }
@@ -160,7 +160,7 @@
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Found blogs for current user")
+                        .message("Đã tìm thấy các blog của người dùng hiện tại")
                         .data(blogResponses)
                         .build()
         );

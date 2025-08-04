@@ -21,14 +21,15 @@ public class InventoryUpdateRequest {
     @NotNull
     private Integer componentId;
 
-    @Min(value = 1, message = "quantity must be greater than or equal to 1")
-    @Max(value = 1000, message = "quantity must be less than or equal to 1000")
+    @Min(value = 250, message = "Thể tích tối thiểu là 250ml")
+    @Max(value = 1000, message = "Thể tích tối đa là 250ml")
     private Integer quantity;
 
     @NotNull
     private LocalDate addedDate;
 
     @NotNull
-    @FutureOrPresent(message = "Expiry date must be in the present or future")
+    @FutureOrPresent(message = "Ngày quá hạn là ngày trong tương lai")
     private LocalDate expiryDate;
+
 }

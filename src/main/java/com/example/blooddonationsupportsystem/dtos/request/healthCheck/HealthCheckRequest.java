@@ -13,15 +13,15 @@ import lombok.*;
 @Getter
 @Setter
 public class HealthCheckRequest {
-    @NotNull(message = "Application id must not be null")
+    @NotNull(message = "ID cuôc hẹn không được trống")
     private Integer appointmentId;
 
-    @NotNull(message = "Pulse must not be null")
-    @Min(value = 30, message = "Pulse must be at least 30")
-    @Max(value = 200, message = "Pulse must be no more than 200")
+    @NotNull(message = "Mạch áp hẹn không được trống")
+    @Min(value = 30, message = "Mạch tối thiểu là 30")
+    @Max(value = 200, message = "Mạch không quá 200")
     private Integer pulse;
 
-    @Size(max = 20, message = "Blood pressure must not exceed 20 characters")
+    @Size(max = 20, message = "Huyết áp không được vượt quá 20 ký tự")
     private String bloodPressure;
 
     private String resultSummary;
@@ -30,7 +30,7 @@ public class HealthCheckRequest {
 
     private String ineligibleReason;
 
-    @NotNull(message = "Weight must not be null")
+    @NotNull(message = "Cân nặng không được để trống")
     private Double weight;
 
     private String suggestBloodVolume;

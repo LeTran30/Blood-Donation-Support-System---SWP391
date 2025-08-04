@@ -94,7 +94,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
-                            .message("Blood donation information created successfully")
+                            .message("Tạo thông tin hiến máu thành công")
                             .data(mapToResponseDTO(saved))
                             .build()
             );
@@ -103,7 +103,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -116,7 +116,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return bloodDonationInformationOpt.map(bloodDonationInformation -> ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Blood donation information retrieved successfully")
+                            .message("Truy xuất thông tin hiến máu thành công")
                             .data(mapToResponseDTO(bloodDonationInformation))
                             .build()
             )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -130,7 +130,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -167,7 +167,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Blood donation information retrieved successfully")
+                            .message("Truy xuất thông tin hiến máu thành công")
                             .data(response)
                             .build()
             );
@@ -175,7 +175,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -208,7 +208,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Total blood volume retrieved successfully")
+                            .message("Truy xuất tổng thể tích máu thành công")
                             .data(response)
                             .build()
             );
@@ -216,7 +216,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -265,7 +265,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Blood donation information updated successfully")
+                            .message("Cập nhập thông tin hiến máu thành công")
                             .data(mapToResponseDTO(updated))
                             .build()
             );
@@ -274,7 +274,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -299,7 +299,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Blood donation information deleted successfully")
+                            .message("Xóa thông tin hiến máu thành công")
                             .build()
             );
         } catch (Exception e) {
@@ -307,7 +307,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -332,7 +332,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("All blood donation information retrieved successfully")
+                            .message("Truy xuất tất cả thông tin hiến máu thành công")
                             .data(response)
                             .build()
             );
@@ -340,7 +340,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }

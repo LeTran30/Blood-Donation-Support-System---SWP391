@@ -10,7 +10,7 @@ import lombok.*;
 @Getter
 @Setter
 public class BloodComponentRequest {
-    @NotNull(message = "Component name must not be null")
+    @NotNull(message = "Cần cung cấp tên thành phần máu")
     private String componentName;
 
 }

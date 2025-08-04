@@ -85,7 +85,7 @@ public class InventoryService implements IInventoryService {
                 .findByBloodTypeAndBloodComponentAndBatchNumber(bloodType, component, request.getBatchNumber());
         // Lookup by bloodType + component + batchNumber (UNIQUE)
         if (optionalInventory.isPresent()) {
-            throw new RuntimeException("Đã tồn tại kho máu có cùng số lô. Không thể tạo bản sao.");
+            throw new RuntimeException("Đã tồn tại đơn vị máu có cùng số lô. Không thể tạo bản sao.");
 
         }
 
@@ -118,7 +118,7 @@ public class InventoryService implements IInventoryService {
     @Override
     public InventoryResponse updateInventory(Integer id, InventoryUpdateRequest request) {
         Inventory inventory = inventoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị máu có ID: " + id));
 
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
                 .orElseThrow(() ->
@@ -157,21 +157,21 @@ public class InventoryService implements IInventoryService {
     public ResponseEntity<ResponseObject> deleteInventory(Integer id) {
         try {
             Inventory inventory = inventoryRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị máu có ID: " + id));
             
             inventoryRepository.delete(inventory);
             
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Successfully deleted inventory")
+                            .message("Xóa thành công đơn vị máu")
                             .build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error deleting inventory: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build());
         }
     }

@@ -88,7 +88,7 @@ public class HealthCheckService implements IHealthCheckService {
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
-                    .message("Health check created successfully")
+                    .message("Tạo đơn khám sức khỏe thành công")
                     .data(mapToResponse(healthCheck))
                     .build());
 
@@ -96,7 +96,7 @@ public class HealthCheckService implements IHealthCheckService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build());
         }
     }
@@ -121,7 +121,7 @@ public class HealthCheckService implements IHealthCheckService {
 
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
-                    .message("Health check records retrieved successfully")
+                    .message("Truy xuất các đơn kiểm tra xuất khỏe thành công")
                     .data(Map.of(
                             "content", responses,
                             "page", Map.of(
@@ -137,7 +137,7 @@ public class HealthCheckService implements IHealthCheckService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build());
         }
     }
@@ -163,7 +163,7 @@ public class HealthCheckService implements IHealthCheckService {
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Health checks fetched successfully")
+                        .message("Truy xuất các đơn kiểm tra xuất khỏe thành công")
                         .data(responses)
                         .build()
         );
@@ -177,13 +177,13 @@ public class HealthCheckService implements IHealthCheckService {
         return healthCheckOpt.map(healthCheck -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Health check fetched successfully")
+                        .message("Truy xuất các đơn kiểm tra xuất khỏe thành công")
                         .data(mapToResponse(healthCheck))
                         .build()
         )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Không tìm thấy thông tin kiểm tra sức khỏe với ID: " + healthCheckId)
+                        .message("Không tìm thấy đơn kiểm tra sức khỏe với ID: " + healthCheckId)
                         .build()
         ));
     }

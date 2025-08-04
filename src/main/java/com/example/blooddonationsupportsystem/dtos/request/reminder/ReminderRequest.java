@@ -15,18 +15,18 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class ReminderRequest {
-    @NotNull(message = "User ID is required")
+    @NotNull(message = "Cần cung cấp ID người dùng")
     private Integer userId;
 
-    @NotNull(message = "Next date is required")
-    @FutureOrPresent(message = "Next date must be today or in the future")
+    @NotNull(message = "Cần cung cấp ngày tiếp theo")
+    @FutureOrPresent(message = "Ngày tiếp theo là hiện tại hoặc tương lai")
     private LocalDate nextDate;
 
-    @NotNull(message = "Reminder type is required")
+    @NotNull(message = "Cần cung cấp loại thông báo")
     private ReminderType reminderType;
 
-    @NotBlank(message = "Message is required")
-    @Size(max = 255, message = "Message must be less than or equal to 255 characters")
+    @NotBlank(message = "Cần cung cấp lời nhắn")
+    @Size(max = 255, message = "Lời nhắn tối đa 255 ký tự")
     private String message;
 
     private Boolean sent = false;

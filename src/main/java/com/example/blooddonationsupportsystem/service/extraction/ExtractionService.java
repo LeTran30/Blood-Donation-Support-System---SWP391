@@ -106,7 +106,7 @@ public class ExtractionService implements IExtractionService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
-                            .message("Extraction created successfully")
+                            .message("Tạo thành công trích xuất")
                             .data(Map.of("extractionId", extraction.getExtractionId()))
                             .build()
             );
@@ -124,7 +124,7 @@ public class ExtractionService implements IExtractionService {
         return extractionRepository.findById(id).map(extraction ->
                 ResponseEntity.ok(ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Extraction retrieved")
+                        .message("Truy xuất trích xuất thành công")
                         .data(mapToResponse(extraction))
                         .build())
         ).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -157,7 +157,7 @@ public class ExtractionService implements IExtractionService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("List extractions")
+                .message("Truy xuất các trích xuất thành công")
                 .data(response)
                 .build());
     }
@@ -174,7 +174,7 @@ public class ExtractionService implements IExtractionService {
                         .build()
         ).collect(Collectors.toList());
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Extraction details").data(response).build());
+        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Chi tiết trích xuất").data(response).build());
     }
 
     @Override
@@ -187,7 +187,7 @@ public class ExtractionService implements IExtractionService {
         extractionDetailRepository.deleteByExtraction_ExtractionId(id);
         extractionRepository.deleteById(id);
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Deleted successfully").build());
+        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Đã xóa trích xuất thành công").build());
     }
 
     @Transactional
@@ -208,7 +208,7 @@ public class ExtractionService implements IExtractionService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Extraction updated successfully")
+                .message("Đã cập nhật trích xuất thành công")
                 .data(Map.of("extractionId", extraction.getExtractionId()))
                 .build());
     }

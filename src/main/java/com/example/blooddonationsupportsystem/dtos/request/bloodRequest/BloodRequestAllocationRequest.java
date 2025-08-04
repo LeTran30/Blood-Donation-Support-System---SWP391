@@ -14,17 +14,17 @@ import lombok.Setter;
 @Data
 public class BloodRequestAllocationRequest {
 
-    @NotNull(message = "Blood type id must not be null")
+    @NotNull(message = "Nhóm máu không được để trống")
     private Integer bloodTypeId;
 
-    @NotNull(message = "Blood component id must not be null")
+    @NotNull(message = "Thành phần máu không được để trống")
     private Integer bloodComponentId;
 
     @Schema(description = "Urgency level of the request", example = "HIGH")
-    @NotNull(message = "Urgency level must not be null")
+    @NotNull(message = "Mức độ nghiêm trọng không được để trống")
     private UrgencyLevel urgencyLevel;
 
-    @NotNull(message = "Quantity id must not be null")
-    @Min(value = 1, message = "Quantity must be at least 1")
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Số lượng không được dưới 1")
     private Integer quantity;
 }

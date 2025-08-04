@@ -62,7 +62,7 @@ public class CertificateService implements ICertificateService {
 
         String donationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         String description = String.format(
-                "This certificate is awarded to %s for donating %d ml of blood on %s.",
+                "Giấy chứng nhận này được trao cho %s vì đã hiến %d ml máu trên %s.",
                 user.getFullName(),
                 bloodDonationInformation.getActualBloodVolume(),
                 donationDate
@@ -70,7 +70,7 @@ public class CertificateService implements ICertificateService {
 
         if (totalVolume >= 1000 || (isFirstDonation && bloodDonationInformation.getActualBloodVolume() >= 350)) {
             certificate.setCertificateType(CertificateType.MERIT);
-            description += " This merit certificate recognizes your outstanding contribution to saving lives through blood donation.";
+            description += " Giấy chứng nhận công trạng này ghi nhận những đóng góp nổi bật của bạn trong việc cứu sống bệnh nhân thông qua việc hiến máu.";
         }
 
         certificate.setDescription(description);
@@ -95,11 +95,11 @@ public class CertificateService implements ICertificateService {
             Certificate updated = certificateRepository.save(cert);
 
             return ResponseEntity.ok(
-                    ResponseObject.builder().status(HttpStatus.OK).message("Certificate updated successfully").data(mapToResponse(updated)).build()
+                    ResponseObject.builder().status(HttpStatus.OK).message("Cập nhật chứng chỉ thành công").data(mapToResponse(updated)).build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build()
+                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build()
             );
         }
     }
@@ -114,11 +114,11 @@ public class CertificateService implements ICertificateService {
             }
             certificateRepository.deleteById(certificateId);
             return ResponseEntity.ok(
-                    ResponseObject.builder().status(HttpStatus.OK).message("Certificate deleted successfully").build()
+                    ResponseObject.builder().status(HttpStatus.OK).message("Xóa chứng chỉ thành công").build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build()
+                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build()
             );
         }
     }
@@ -153,7 +153,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Certificates retrieved successfully")
+                            .message("Truy xuất chứng chỉ thành công")
                             .data(response)
                             .build()
             );
@@ -161,7 +161,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -174,7 +174,7 @@ public class CertificateService implements ICertificateService {
             return certificateOpt.map(certificate -> ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Certificate retrieved successfully")
+                            .message("Truy xuất chứng chỉ thành công")
                             .data(mapToResponse(certificate))
                             .build()
             )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -188,7 +188,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -206,9 +206,9 @@ public class CertificateService implements ICertificateService {
             response.put("totalPages", certs.getTotalPages());
             response.put("currentPage", page);
 
-            return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("All certificates retrieved").data(response).build());
+            return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Truy xuất tất cả chứng chỉ thành công").data(response).build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build());
         }
     }
 

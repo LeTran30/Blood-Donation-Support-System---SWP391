@@ -55,7 +55,7 @@ public class AppointmentService implements IAppointmentService{
         return  ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.CREATED)
-                        .message("Successfully created appointment")
+                        .message("Đặt cuộc hiện thành công")
                         .data(mapWithUserId(saved))
                         .build()
         );
@@ -67,7 +67,7 @@ public class AppointmentService implements IAppointmentService{
         return appointment.map(value -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully retrieved appointment")
+                        .message("Truy xuất cuộc hẹn thành công")
                         .data(mapWithUserId(value))
                         .build()
         )).orElseGet(() -> ResponseEntity.ok(
@@ -94,7 +94,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully retrieved appointments")
+                        .message("Truy xuất ca cuộc hẹn thành công")
                         .data(appointments.map(this::mapWithUserId)) // map trả về dạng Page
                         .build()
         );
@@ -134,7 +134,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully updated appointment")
+                        .message("Cập nhật cuộc hẹn thành công")
                         .data(mapWithUserId(saved))
                         .build()
         );
@@ -158,7 +158,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully cancelled appointment")
+                        .message("Hủy cuộc hẹn thành công")
                         .data(mapWithUserId(appointment))
                         .build()
         );
@@ -206,7 +206,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Appointments retrieved successfully")
+                        .message("Truy xuất các cuộc hẹn thành công")
                         .data(data)
                         .build()
         );

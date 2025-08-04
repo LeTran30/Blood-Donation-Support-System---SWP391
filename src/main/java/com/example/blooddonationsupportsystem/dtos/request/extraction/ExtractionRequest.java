@@ -14,14 +14,14 @@ import java.time.LocalDateTime;
 @Setter
 public class ExtractionRequest {
 
-    @NotNull(message = "Blood type ID is required")
+    @NotNull(message = "ID nhóm máu không được để trống")
     private Integer bloodTypeId;
     
-    @NotNull(message = "Blood component ID is required")
+    @NotNull(message = "ID thành phần máu không được để trống")
     private Integer bloodComponentId;
     
-    @NotNull(message = "Volume extracted is required")
-    @Min(value = 1, message = "Volume extracted must be greater than 0")
+    @NotNull(message = "Thể tích máu trích xuất không được để trống")
+    @Min(value = 250, message = "Thể tích máu trích xuất tối thiểu là 250ml")
     private Integer totalVolumeExtraction;
 
     private String notes;
