@@ -53,7 +53,15 @@ public class ExtractionService implements IExtractionService {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Không đủ lượng máu để trích xuất. Thiếu " + (requestedVolume - availableVolume) + " ml.")
+                                .message("Not enough blood to extract. " + (requestedVolume - availableVolume) + " ml short.")
+                                .build()
+                );
+            }
+            if (availableVolume == 0) {
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("There is no suitable blood left in stock.")
                                 .build()
                 );
             }
