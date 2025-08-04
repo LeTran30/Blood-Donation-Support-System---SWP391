@@ -135,7 +135,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
     }
 
     @Override
-    public ResponseEntity<?> getBloodDonationInformationsByUserId(Integer userId, int page, int size) {
+    public ResponseEntity<?> getBloodDonationInformationByUserId(Integer userId, int page, int size) {
         try {
             Optional<User> userOpt = userRepository.findById(userId);
             if (userOpt.isEmpty()) {
@@ -150,9 +150,9 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             User user = userOpt.get();
             Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             
-            List<BloodDonationInformation> bloodDonationInformations = bloodDonationInformationRepository.findByUserOrderByCreateAtDesc(user);
+            List<BloodDonationInformation> bloodDonationInformation = bloodDonationInformationRepository.findByUserOrderByCreateAtDesc(user);
             
-            List<BloodDonationInformationResponse> responseList = bloodDonationInformations.stream()
+            List<BloodDonationInformationResponse> responseList = bloodDonationInformation.stream()
                     .map(this::mapToResponseDTO)
                     .collect(Collectors.toList());
 
@@ -314,7 +314,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
     }
 
     @Override
-    public ResponseEntity<?> getAllBloodDonationInformations(int page, int size) {
+    public ResponseEntity<?> getAllBloodDonationInformation(int page, int size) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             var infosPage = bloodDonationInformationRepository.findAll(pageable);
@@ -332,7 +332,7 @@ public class BloodDonationInformationService implements IBloodDonationInformatio
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("All blood donation informations retrieved successfully")
+                            .message("All blood donation information retrieved successfully")
                             .data(response)
                             .build()
             );
