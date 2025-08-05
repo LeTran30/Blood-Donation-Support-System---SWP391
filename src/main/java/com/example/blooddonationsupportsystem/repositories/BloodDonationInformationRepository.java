@@ -5,8 +5,10 @@ import com.example.blooddonationsupportsystem.models.BloodDonationInformation;
 import com.example.blooddonationsupportsystem.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +23,9 @@ public interface BloodDonationInformationRepository extends JpaRepository<BloodD
     Integer getTotalBloodVolumeByUser(User user);
 
     boolean existsByAppointment(Appointment appointment);
+
+    @Query("SELECT MIN(b.createAt) FROM BloodDonationInformation b WHERE b.appointment.user = :user")
+    Optional<LocalDate> findEarliestDonationDateByUser(@Param("user") User user);
+
+    long countByAppointment_User(User user);
 }

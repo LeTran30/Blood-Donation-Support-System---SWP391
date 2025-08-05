@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.certificate.CertificateResponse;
 import com.example.blooddonationsupportsystem.models.BloodDonationInformation;
 import com.example.blooddonationsupportsystem.models.Certificate;
+import com.example.blooddonationsupportsystem.models.HealthDeclaration;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.BloodDonationInformationRepository;
 import com.example.blooddonationsupportsystem.repositories.CertificateRepository;
@@ -23,10 +24,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,40 +43,89 @@ public class CertificateService implements ICertificateService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin hiến máu"));
 
         User user = bloodDonationInformation.getAppointment().getUser();
+        int volume = bloodDonationInformation.getActualBloodVolume();
 
+        // Tổng lượng máu sau khi hiến
         Integer totalVolume = bloodDonationInformationRepository.getTotalBloodVolumeByUser(user);
-        if (totalVolume == null) {
-            totalVolume = bloodDonationInformation.getActualBloodVolume();
+        if (totalVolume == null) totalVolume = volume;
+
+        // Trước khi hiến
+        int totalBefore = totalVolume - volume;
+
+        // Số lần hiến
+        long donationCount = bloodDonationInformationRepository.countByAppointment_User(user);
+        boolean isFirstDonation = donationCount == 0;
+
+        // Tính số năm đã hiến máu
+        LocalDate firstDonationDate = bloodDonationInformationRepository
+                .findEarliestDonationDateByUser(user)
+                .orElse(LocalDate.now());
+        long yearsOfDonation = ChronoUnit.YEARS.between(firstDonationDate, LocalDate.now());
+
+        // Xác định loại chứng nhận
+        CertificateType certificateType = CertificateType.CERTIFICATE;
+        String meritReasonDescription = null;
+
+        // 1. Đạt mốc tổng lượng máu
+        List<Integer> volumeMilestones = Arrays.asList(1000, 2000, 3000, 5000);
+        for (Integer milestone : volumeMilestones) {
+            if (totalBefore < milestone && totalVolume >= milestone) {
+                certificateType = CertificateType.MERIT;
+                meritReasonDescription = String.format("Bạn vừa đạt mốc hiến máu tổng cộng %d ml – một thành tích đáng trân trọng. ", milestone);
+                break;
+            }
         }
 
-        List<BloodDonationInformation> previousDonations = bloodDonationInformationRepository
-                .findByUserOrderByCreateAtDesc(user);
-        boolean isFirstDonation = previousDonations.size() <= 1;
+        // 2. Đạt mốc số lần hiến
+        List<Integer> donationMilestones = Arrays.asList(5, 10, 20, 30);
+        for (Integer milestone : donationMilestones) {
+            if ((donationCount - 1) < milestone && donationCount >= milestone) {
+                certificateType = CertificateType.MERIT;
+                meritReasonDescription = String.format("Bạn đã hiến máu %d lần – một tinh thần bền bỉ thật đáng ngưỡng mộ. ", milestone);
+                break;
+            }
+        }
 
+        // 3. Hiến máu đều đặn nhiều năm
+        if (donationCount >= 10 && yearsOfDonation >= 5) {
+            certificateType = CertificateType.MERIT;
+            meritReasonDescription = String.format("Bạn đã hiến máu đều đặn trong hơn %d năm – một tấm gương cống hiến lâu dài cho cộng đồng. ", yearsOfDonation);
+        }
+
+        String donationDate = bloodDonationInformation.getAppointment().getAppointmentDate()
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Mô tả giấy chứng nhận
+        StringBuilder description = new StringBuilder();
+        description.append(String.format("Chứng nhận hiến máu vào ngày %s. ", donationDate));
+        description.append(String.format("%s đã hiến %d ml máu. ", user.getFullName(), volume));
+
+        if (isFirstDonation) {
+            description.append("Đây là lần đầu tiên tham gia hiến máu. ");
+        } else {
+            description.append(String.format("Tính đến nay đã hiến máu %d lần, tổng cộng %d ml. ", donationCount, totalVolume));
+        }
+
+        // Lý do cấp bằng khen (nằm trong mô tả)
+        if (certificateType == CertificateType.MERIT && meritReasonDescription != null) {
+            description.append(meritReasonDescription);
+        }
+
+        description.append("Xin trân trọng cảm ơn nghĩa cử cao đẹp của bạn.");
+
+        // Tạo certificate
         Certificate certificate = new Certificate();
         certificate.setUser(user);
-        certificate.setCertificateType(CertificateType.CERTIFICATE);
+        certificate.setCertificateType(certificateType);
         certificate.setCreateAt(LocalDateTime.now());
         certificate.setUpdateAt(LocalDateTime.now());
+        certificate.setDescription(description.toString().trim());
 
-        String donationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String description = String.format(
-                "Giấy chứng nhận này được trao cho %s vì đã hiến %d ml máu trên %s.",
-                user.getFullName(),
-                bloodDonationInformation.getActualBloodVolume(),
-                donationDate
-        );
-
-        if (totalVolume >= 1000 || (isFirstDonation && bloodDonationInformation.getActualBloodVolume() >= 350)) {
-            certificate.setCertificateType(CertificateType.MERIT);
-            description += " Giấy chứng nhận công trạng này ghi nhận những đóng góp nổi bật của bạn trong việc cứu sống bệnh nhân thông qua việc hiến máu.";
-        }
-
-        certificate.setDescription(description);
         Certificate saved = certificateRepository.save(certificate);
-
-        return mapToResponse(saved); // Trả về DTO
+        return mapToResponse(saved);
     }
+
+
 
     @Override
     public ResponseEntity<?> updateCertificate(Integer certificateId, String newDescription, CertificateType type) {
