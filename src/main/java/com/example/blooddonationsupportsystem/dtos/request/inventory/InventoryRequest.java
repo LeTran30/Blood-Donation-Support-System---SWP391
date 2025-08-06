@@ -20,7 +20,7 @@ public class InventoryRequest {
     @NotNull
     private Integer componentId;
 
-    @Positive(value = 250, message = "Thể tích là số nguyên dương")
+    @Positive(message = "Thể tích là số nguyên dương")
     private Integer quantity;
     @NotNull
     private LocalDate addedDate;
