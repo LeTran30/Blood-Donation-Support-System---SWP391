@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.service.healthDeclaration;
 
 import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.healthDeclaration.HealthDeclarationResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
@@ -9,6 +10,7 @@ import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
 import com.example.blooddonationsupportsystem.repositories.HealthDeclarationRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
+import com.example.blooddonationsupportsystem.utils.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,26 +31,33 @@ public class HealthDeclarationService implements IHealthDeclarationService {
     private final UserRepository userRepository;
 
     @Override
-    public ResponseEntity<?> createHealthDeclaration(HealthDeclarationRequest request) {
+    public ResponseEntity<?> createHealthDeclaration(HealthDeclarationRequest request, Integer userId) {
         try {
             Optional<Appointment> appointmentOpt = appointmentRepository.findById(request.getAppointmentId());
             if (appointmentOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Appointment not found")
+                                .message("Không tìm thấy cuộc hẹn")
                                 .build()
                 );
             }
 
             Appointment appointment = appointmentOpt.get();
-
+            if (!appointment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.FORBIDDEN)
+                                .message("Bạn không có quyền để tạo bản kê khai y tế cho cuộc hẹn này")
+                                .build()
+                );
+            }
             // Check if declaration already exists
             if (healthDeclarationRepository.findByAppointment(appointment).isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.CONFLICT)
-                                .message("Health declaration already exists for this appointment")
+                                .message("Đã có bản kê khai y tế cho cuộc hẹn này")
                                 .build()
                 );
             }
@@ -72,7 +81,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
-                            .message("Health declaration created successfully")
+                            .message("Tạo các bản kê khai y tế thành công")
                             .data(mapToResponseDTO(saved))
                             .build()
             );
@@ -80,7 +89,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -91,27 +100,24 @@ public class HealthDeclarationService implements IHealthDeclarationService {
     public ResponseEntity<?> getHealthDeclarationByAppointmentId(Integer appointmentId) {
         try {
             Optional<HealthDeclaration> healthDeclarationOpt = healthDeclarationRepository.findByAppointmentAppointmentId(appointmentId);
-            if (healthDeclarationOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found for appointment ID: " + appointmentId)
-                                .build()
-                );
-            }
-
-            return ResponseEntity.ok(
+            return healthDeclarationOpt.map(healthDeclaration -> ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Health declaration retrieved successfully")
-                            .data(mapToResponseDTO(healthDeclarationOpt.get()))
+                            .message("Truy xuất bản kê khai y tế thành công")
+                            .data(mapToResponseDTO(healthDeclaration))
                             .build()
-            );
+            )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.NOT_FOUND)
+                            .message("Không tìm thấy bản kê khai y tế với cuộc hẹn với ID: " + appointmentId)
+                            .build()
+            ));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -125,7 +131,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("User not found")
+                                .message("Không tìm thấy người dùng")
                                 .build()
                 );
             }
@@ -154,7 +160,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Health declarations retrieved successfully")
+                            .message("Truy xuất các bản kê khai y tế thành công")
                             .data(response)
                             .build()
             );
@@ -162,38 +168,36 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
     }
-
     @Override
-    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationRequest request) {
+    public ResponseEntity<?> updateHealthDeclaration(Integer healthDeclarationId, HealthDeclarationUpdateRequest request, Integer userId, Role role) {
         try {
             Optional<HealthDeclaration> declarationOpt = healthDeclarationRepository.findById(healthDeclarationId);
             if (declarationOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found with ID: " + healthDeclarationId)
+                                .message("Không tìm thấy bản kê khai y tế kèm ID.: " + healthDeclarationId)
                                 .build()
                 );
             }
 
             HealthDeclaration declaration = declarationOpt.get();
+            Appointment appointment = declaration.getAppointment();
 
-            // Optional: check if appointmentId in request matches current one (if used in frontend form)
-            if (!declaration.getAppointment().getAppointmentId().equals(request.getAppointmentId())) {
-                return ResponseEntity.badRequest().body(
+            if (role == Role.MEMBER && !appointment.getUser().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                         ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Appointment ID mismatch")
+                                .status(HttpStatus.FORBIDDEN)
+                                .message("Tài khoản của bạn không có quyền cần thiết để chỉnh sửa bản kê khai y tế.")
                                 .build()
                 );
             }
 
-            // Update fields
             declaration.setHasBloodTransmittedDisease(request.getHasBloodTransmittedDisease());
             declaration.setHasChronicDisease(request.getHasChronicDisease());
             declaration.setCurrentMedications(request.getCurrentMedications());
@@ -210,7 +214,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Health declaration updated successfully")
+                            .message("Cập nhật bản kê khai y tế thành công")
                             .data(mapToResponseDTO(updated))
                             .build()
             );
@@ -219,7 +223,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -231,13 +235,13 @@ public class HealthDeclarationService implements IHealthDeclarationService {
         return declarationOpt.map(healthDeclaration -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Health declaration retrieved successfully")
+                        .message("Truy xuất bản kê khai y tế thành công")
                         .data(mapToResponseDTO(healthDeclaration))
                         .build()
         )).orElseGet(() -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Health declaration not found with ID: " + id)
+                        .message("Không tìm thấy bản kê khai y tế kèm ID.: " + id)
                         .build()
         ));
 
@@ -251,7 +255,7 @@ public class HealthDeclarationService implements IHealthDeclarationService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("Health declaration not found with ID: " + healthDeclarationId)
+                                .message("Không tìm thấy bản kê khai y tế kèm ID.: " + healthDeclarationId)
                                 .build()
                 );
             }
@@ -261,14 +265,14 @@ public class HealthDeclarationService implements IHealthDeclarationService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Health declaration deleted successfully")
+                            .message("Xóa bản kê khai y tế thành công")
                             .build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }

@@ -1,11 +1,13 @@
 package com.example.blooddonationsupportsystem.controller;
 
 import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationRequest;
+import com.example.blooddonationsupportsystem.dtos.request.healthDeclaration.HealthDeclarationUpdateRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.healthDeclaration.IHealthDeclarationService;
 import com.example.blooddonationsupportsystem.utils.Role;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,8 +69,9 @@ public class HealthDeclarationController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('member:create', 'staff:create')")
     public ResponseEntity<?> createHealthDeclaration(
-            @RequestBody HealthDeclarationRequest request,
-            BindingResult result
+            @Valid @RequestBody HealthDeclarationRequest request,
+            BindingResult result,
+            Principal principal
     ) {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
@@ -82,17 +85,27 @@ public class HealthDeclarationController {
                             .build()
             );
         }
-        return healthDeclarationService.createHealthDeclaration(request);
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return healthDeclarationService.createHealthDeclaration(request, user.getId());
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('member:update', 'staff:update')")
     public ResponseEntity<?> updateHealthDeclaration(
             @PathVariable("id") Integer id,
-            @RequestBody HealthDeclarationRequest request
+            @RequestBody HealthDeclarationUpdateRequest request,
+            Principal principal
     ) {
-        return healthDeclarationService.updateHealthDeclaration(id, request);
+        String email = principal.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return healthDeclarationService.updateHealthDeclaration(id, request, user.getId(), user.getRole());
     }
+
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('member:delete', 'staff:delete')")
     public ResponseEntity<?> deleteHealthDeclaration(@PathVariable("id") Integer id) {

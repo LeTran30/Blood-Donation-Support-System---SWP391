@@ -43,11 +43,11 @@ public class BloodRequestService implements IBloodRequestService {
         }
 
         BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                .orElseThrow(() -> new RuntimeException("Blood type not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu"));
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         bloodRequest.setBloodType(bloodType);
         bloodRequest.setStatus(RequestStatus.PENDING);
@@ -59,7 +59,7 @@ public class BloodRequestService implements IBloodRequestService {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseObject.builder()
                         .status(HttpStatus.CREATED)
-                        .message("Blood request created successfully")
+                        .message("Tạo yêu cầu thành công")
                         .data(response)
                         .build());
     }
@@ -76,7 +76,7 @@ public class BloodRequestService implements IBloodRequestService {
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("List of blood requests retrieved successfully")
+                        .message("Truy xuất yêu cầu thành công")
                         .data(Map.of(
                                 "content", responses,
                                 "page", Map.of(
@@ -100,7 +100,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("No inventory allocations found for this blood request")
+                            .message("Không có nhóm máu cần tìm trong kho")
                             .build());
         }
 
@@ -111,7 +111,7 @@ public class BloodRequestService implements IBloodRequestService {
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Inventory allocations retrieved successfully")
+                        .message("Truy xuất kho máu thành công")
                         .data(Map.of(
                                 "content", responseList,
                                 "page", Map.of(
@@ -133,7 +133,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Blood request not found")
+                            .message("Không tìm thấy yêu cầu")
                             .build());
         }
 
@@ -147,7 +147,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("No inventory available for this blood request")
+                            .message("Kho không sẵn dùng với yêu cầu")
                             .build());
         }
 
@@ -157,7 +157,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Not enough inventory to fulfill the request")
+                            .message("Không đủ lượng máu trong kho với yêu cầu")
                             .build());
         }
 
@@ -187,7 +187,7 @@ public class BloodRequestService implements IBloodRequestService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Allocated " + requestedQuantity + " units of inventory successfully")
+                .message("Đã phân bổ " + requestedQuantity + " đơn vị")
                 .build());
     }
 
@@ -198,7 +198,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Blood request not found")
+                            .message("Không tìm thấy yêu cầu")
                             .build());
         }
 
@@ -208,7 +208,7 @@ public class BloodRequestService implements IBloodRequestService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Blood request is already cancelled")
+                            .message("Yêu cầu đã bị hủy bỏ")
                             .build());
         }
 
@@ -217,7 +217,7 @@ public class BloodRequestService implements IBloodRequestService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Blood request cancelled (soft deleted) successfully")
+                .message("Hu yêu cầu thành công")
                 .build());
     }
 

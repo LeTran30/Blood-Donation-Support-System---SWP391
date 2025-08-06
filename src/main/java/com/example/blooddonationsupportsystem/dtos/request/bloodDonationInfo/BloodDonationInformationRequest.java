@@ -11,13 +11,12 @@ import lombok.*;
 @Getter
 @Setter
 public class BloodDonationInformationRequest {
-    @NotNull(message = "Appointment ID is required")
+    @NotNull(message = "ID cuộc hẹn không được để trống")
     private Integer appointmentId;
 
-    @NotNull(message = "Blood Type ID is required")
     private Integer bloodTypeId;
 
-    @NotNull(message = "Actual blood volume is required")
-    @Min(value = 1, message = "Actual blood volume must be at least 1")
+    @NotNull(message = "Thể tích máu thực tế không được để trống")
+    @Min(value = 250, message = "Thể tích máu thực tế không dưới 250ml")
     private Integer actualBloodVolume;
 }

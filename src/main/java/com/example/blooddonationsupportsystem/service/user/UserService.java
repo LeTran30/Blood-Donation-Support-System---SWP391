@@ -367,6 +367,8 @@ public class UserService implements IUserService {
                           .latitude(user.getLatitude())
                           .longitude(user.getLongitude())
                           .dateOfBirth(user.getDateOfBirth())
+                          .job(user.getJob())
+                          .citizenId(user.getCitizenId())
                           .bloodTypeId(user.getBloodType() != null ? user.getBloodType().getBloodTypeId() : null) // ✅ An toàn
                           .build();
     }
@@ -441,10 +443,10 @@ public class UserService implements IUserService {
                 user.setAddress(request.getAddress());
             }
             if (request.getJob() != null) {
-                user.setAddress(request.getJob());
+                user.setJob(request.getJob());
             }
             if (request.getCitizenId() != null) {
-                user.setAddress(request.getCitizenId());
+                user.setCitizenId(request.getCitizenId());
             }
             if (request.getBloodTypeId() != null) {
             Optional<BloodType> optionalBloodType = bloodTypeRepository.findById(request.getBloodTypeId());

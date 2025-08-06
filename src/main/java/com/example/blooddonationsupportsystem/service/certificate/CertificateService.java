@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.certificate.CertificateResponse;
 import com.example.blooddonationsupportsystem.models.BloodDonationInformation;
 import com.example.blooddonationsupportsystem.models.Certificate;
+import com.example.blooddonationsupportsystem.models.HealthDeclaration;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.BloodDonationInformationRepository;
 import com.example.blooddonationsupportsystem.repositories.CertificateRepository;
@@ -23,10 +24,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,73 +37,95 @@ public class CertificateService implements ICertificateService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> generateCertificateForDonation(Integer bloodDonationInforId) {
-        try {
-            // Find blood donation information
-            Optional<BloodDonationInformation> bloodDonationInforOpt = bloodDonationInformationRepository.findById(bloodDonationInforId);
-            if (bloodDonationInforOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(
-                        ResponseObject.builder()
-                                .status(HttpStatus.BAD_REQUEST)
-                                .message("Blood donation information not found")
-                                .build()
-                );
-            }
+    public CertificateResponse generateCertificateForDonation(Integer bloodDonationInforId) {
+        BloodDonationInformation bloodDonationInformation = bloodDonationInformationRepository
+                .findById(bloodDonationInforId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin hiến máu"));
 
-            BloodDonationInformation bloodDonationInformation = bloodDonationInforOpt.get();
-            User user = bloodDonationInformation.getAppointment().getUser();
-            
-            // Get total blood volume donated by user
-            Integer totalVolume = bloodDonationInformationRepository.getTotalBloodVolumeByUser(user);
-            if (totalVolume == null) {
-                totalVolume = bloodDonationInformation.getActualBloodVolume();
+        User user = bloodDonationInformation.getAppointment().getUser();
+        int volume = bloodDonationInformation.getActualBloodVolume();
+
+        // Tổng lượng máu sau khi hiến
+        Integer totalVolume = bloodDonationInformationRepository.getTotalBloodVolumeByUser(user);
+        if (totalVolume == null) totalVolume = volume;
+
+        // Trước khi hiến
+        int totalBefore = totalVolume - volume;
+
+        // Số lần hiến
+        long donationCount = bloodDonationInformationRepository.countByAppointment_User(user);
+        boolean isFirstDonation = donationCount == 0;
+
+        // Tính số năm đã hiến máu
+        LocalDate firstDonationDate = bloodDonationInformationRepository
+                .findEarliestDonationDateByUser(user)
+                .orElse(LocalDate.now());
+        long yearsOfDonation = ChronoUnit.YEARS.between(firstDonationDate, LocalDate.now());
+
+        // Xác định loại chứng nhận
+        CertificateType certificateType = CertificateType.CERTIFICATE;
+        String meritReasonDescription = null;
+
+        // 1. Đạt mốc tổng lượng máu
+        List<Integer> volumeMilestones = Arrays.asList(1000, 2000, 3000, 5000);
+        for (Integer milestone : volumeMilestones) {
+            if (totalBefore < milestone && totalVolume >= milestone) {
+                certificateType = CertificateType.MERIT;
+                meritReasonDescription = String.format("Bạn vừa đạt mốc hiến máu tổng cộng %d ml – một thành tích đáng trân trọng. ", milestone);
+                break;
             }
-            
-            // Check if this is the first donation
-            List<BloodDonationInformation> previousDonations = bloodDonationInformationRepository.findByUserOrderByCreateAtDesc(user);
-            boolean isFirstDonation = previousDonations.size() <= 1; // Including the current one
-            
-            // Generate certificate
-            Certificate certificate = Certificate.builder()
-                    .user(user)
-                    .certificateType(CertificateType.CERTIFICATE) // Default type
-                    .build();
-            certificate.setCreateAt(LocalDateTime.now());
-            // Generate description based on donation details
-            String donationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            String description = String.format(
-                    "This certificate is awarded to %s for donating %d ml of blood on %s.",
-                    user.getFullName(),
-                    bloodDonationInformation.getActualBloodVolume(),
-                    donationDate
-            );
-            
-            // Check if user qualifies for a merit certificate
-            if (totalVolume >= 1000 || (isFirstDonation && bloodDonationInformation.getActualBloodVolume() >= 350)) {
-                certificate.setCertificateType(CertificateType.MERIT);
-                description += " This merit certificate recognizes your outstanding contribution to saving lives through blood donation.";
-            }
-            
-            certificate.setDescription(description);
-            
-            Certificate saved = certificateRepository.save(certificate);
-            
-            return ResponseEntity.ok(
-                    ResponseObject.builder()
-                            .status(HttpStatus.CREATED)
-                            .message("Certificate generated successfully")
-                            .data(mapToResponse(saved))
-                            .build()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder()
-                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
-                            .build()
-            );
         }
+
+        // 2. Đạt mốc số lần hiến
+        List<Integer> donationMilestones = Arrays.asList(5, 10, 20, 30);
+        for (Integer milestone : donationMilestones) {
+            if ((donationCount - 1) < milestone && donationCount >= milestone) {
+                certificateType = CertificateType.MERIT;
+                meritReasonDescription = String.format("Bạn đã hiến máu %d lần – một tinh thần bền bỉ thật đáng ngưỡng mộ. ", milestone);
+                break;
+            }
+        }
+
+        // 3. Hiến máu đều đặn nhiều năm
+        if (donationCount >= 10 && yearsOfDonation >= 5) {
+            certificateType = CertificateType.MERIT;
+            meritReasonDescription = String.format("Bạn đã hiến máu đều đặn trong hơn %d năm – một tấm gương cống hiến lâu dài cho cộng đồng. ", yearsOfDonation);
+        }
+
+        String donationDate = bloodDonationInformation.getAppointment().getAppointmentDate()
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        // Mô tả giấy chứng nhận
+        StringBuilder description = new StringBuilder();
+        description.append(String.format("Chứng nhận hiến máu vào ngày %s. ", donationDate));
+        description.append(String.format("%s đã hiến %d ml máu. ", user.getFullName(), volume));
+
+        if (isFirstDonation) {
+            description.append("Đây là lần đầu tiên tham gia hiến máu. ");
+        } else {
+            description.append(String.format("Tính đến nay đã hiến máu %d lần, tổng cộng %d ml. ", donationCount, totalVolume));
+        }
+
+        // Lý do cấp bằng khen (nằm trong mô tả)
+        if (certificateType == CertificateType.MERIT && meritReasonDescription != null) {
+            description.append(meritReasonDescription);
+        }
+
+        description.append("Xin trân trọng cảm ơn nghĩa cử cao đẹp của bạn.");
+
+        // Tạo certificate
+        Certificate certificate = new Certificate();
+        certificate.setUser(user);
+        certificate.setCertificateType(certificateType);
+        certificate.setCreateAt(LocalDateTime.now());
+        certificate.setUpdateAt(LocalDateTime.now());
+        certificate.setDescription(description.toString().trim());
+
+        Certificate saved = certificateRepository.save(certificate);
+        return mapToResponse(saved);
     }
+
+
 
     @Override
     public ResponseEntity<?> updateCertificate(Integer certificateId, String newDescription, CertificateType type) {
@@ -112,7 +133,7 @@ public class CertificateService implements ICertificateService {
             Optional<Certificate> certOpt = certificateRepository.findById(certificateId);
             if (certOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Certificate not found").build()
+                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy chứng chỉ").build()
                 );
             }
 
@@ -122,11 +143,11 @@ public class CertificateService implements ICertificateService {
             Certificate updated = certificateRepository.save(cert);
 
             return ResponseEntity.ok(
-                    ResponseObject.builder().status(HttpStatus.OK).message("Certificate updated successfully").data(mapToResponse(updated)).build()
+                    ResponseObject.builder().status(HttpStatus.OK).message("Cập nhật chứng chỉ thành công").data(mapToResponse(updated)).build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build()
+                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build()
             );
         }
     }
@@ -136,16 +157,16 @@ public class CertificateService implements ICertificateService {
         try {
             if (!certificateRepository.existsById(certificateId)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Certificate not found").build()
+                        ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy chứng chỉ").build()
                 );
             }
             certificateRepository.deleteById(certificateId);
             return ResponseEntity.ok(
-                    ResponseObject.builder().status(HttpStatus.OK).message("Certificate deleted successfully").build()
+                    ResponseObject.builder().status(HttpStatus.OK).message("Xóa chứng chỉ thành công").build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build()
+                    ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build()
             );
         }
     }
@@ -158,13 +179,13 @@ public class CertificateService implements ICertificateService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         ResponseObject.builder()
                                 .status(HttpStatus.NOT_FOUND)
-                                .message("User not found")
+                                .message("Không tìm thấy người dùng")
                                 .build()
                 );
             }
 
             User user = userOpt.get();
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             Page<Certificate> certificatesPage = certificateRepository.findByUser(user, pageable);
             
             List<CertificateResponse> responseList = certificatesPage.getContent().stream()
@@ -180,7 +201,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Certificates retrieved successfully")
+                            .message("Truy xuất chứng chỉ thành công")
                             .data(response)
                             .build()
             );
@@ -188,7 +209,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -201,13 +222,13 @@ public class CertificateService implements ICertificateService {
             return certificateOpt.map(certificate -> ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.OK)
-                            .message("Certificate retrieved successfully")
+                            .message("Truy xuất chứng chỉ thành công")
                             .data(mapToResponse(certificate))
                             .build()
             )).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Certificate not found")
+                            .message("Không tìm thấy chứng chỉ")
                             .build()
             ));
 
@@ -215,7 +236,7 @@ public class CertificateService implements ICertificateService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseObject.builder()
                             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .message("Error: " + e.getMessage())
+                            .message("Lỗi: " + e.getMessage())
                             .build()
             );
         }
@@ -223,7 +244,7 @@ public class CertificateService implements ICertificateService {
     @Override
     public ResponseEntity<?> getAllCertificates(int page, int size) {
         try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
             Page<Certificate> certs = certificateRepository.findAll(pageable);
 
             List<CertificateResponse> list = certs.getContent().stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -233,9 +254,9 @@ public class CertificateService implements ICertificateService {
             response.put("totalPages", certs.getTotalPages());
             response.put("currentPage", page);
 
-            return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("All certificates retrieved").data(response).build());
+            return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Truy xuất tất cả chứng chỉ thành công").data(response).build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Error: " + e.getMessage()).build());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status(HttpStatus.INTERNAL_SERVER_ERROR).message("Lỗi: " + e.getMessage()).build());
         }
     }
 
@@ -247,8 +268,9 @@ public class CertificateService implements ICertificateService {
                 .userName(certificate.getUser().getFullName())
                 .certificateType(certificate.getCertificateType())
                 .description(certificate.getDescription())
-                .createAt(certificate.getCreateAt())
-                .updateAt(certificate.getUpdateAt())
+                .createAt(certificate.getCreateAt() != null ? certificate.getCreateAt() : null)
+                .updateAt(certificate.getUpdateAt() != null ? certificate.getUpdateAt() : null)
                 .build();
     }
+
 }

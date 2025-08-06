@@ -16,26 +16,26 @@ import java.time.LocalDate;
 @Setter
 public class BloodDonationRequest {
 
-    @NotNull(message = "User is required.")
+    @NotNull(message = "Cần cung cấp ID người dùng.")
     private Integer user;
 
-    @NotNull(message = "Donation date is required.")
+    @NotNull(message = "Cần cung cấp ngày hiến máu.")
     private LocalDate donationDate;
 
-    @NotNull(message = "Blood type is required.")
+    @NotNull(message = "Cần cung cấp nhóm máu.")
     private Integer bloodType;
 
-    @NotNull(message = "Blood component is required.")
+    @NotNull(message = "Cần cung cấp thành phần máu.")
     private Integer bloodComponent;
 
-    @NotNull(message = "Volume in ml is required.")
-    @Min(value = 50, message = "Minimum donation volume is 50ml.")
+    @NotNull(message = "Cần cung cấp thể tích máu(ml).")
+    @Min(value = 50, message = "Thể tích máu(ml) tối thiểu 50ml.")
     private Integer volumeMl;
 
-    @NotNull(message = "Donation status is required.")
+    @NotNull(message = "Cần cung cấp trạng thái cuộc hiến máu.")
     private DonationStatus status;
 
-    @NotNull(message = "Health check information is required.")
+    @NotNull(message = "Cần cung cấp thông tin kiểm tra y tế.")
     private Integer healthCheck;
 
 }

@@ -10,6 +10,7 @@ import com.example.blooddonationsupportsystem.utils.InventoryStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,16 +34,25 @@ public class ExtractionService implements IExtractionService {
     public ResponseEntity<?> createExtraction(ExtractionRequest request) {
         try {
             BloodType bloodType = bloodTypeRepository.findById(request.getBloodTypeId())
-                    .orElseThrow(() -> new RuntimeException("Blood type not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu"));
 
             BloodComponent bloodComponent = bloodComponentRepository.findById(request.getBloodComponentId())
-                    .orElseThrow(() -> new RuntimeException("Blood component not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thành phần máu"));
 
             List<Inventory> inventories = inventoryRepository
-                    .findByBloodTypeAndBloodComponentAndExpiryDateGreaterThanEqual(
-                            bloodType, bloodComponent, LocalDate.now()
+                    .findByBloodTypeAndBloodComponentAndStatus(
+                            bloodType, bloodComponent, InventoryStatus.AVAILABLE
                     );
+
             inventories.sort(Comparator.comparing(Inventory::getAddedDate));
+            if (inventories.isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("Không còn máu phù hợp trong kho.")
+                                .build()
+                );
+            }
 
             int availableVolume = inventories.stream().mapToInt(Inventory::getQuantity).sum();
             int requestedVolume = request.getTotalVolumeExtraction();
@@ -51,7 +61,7 @@ public class ExtractionService implements IExtractionService {
                 return ResponseEntity.badRequest().body(
                         ResponseObject.builder()
                                 .status(HttpStatus.BAD_REQUEST)
-                                .message("Không đủ lượng máu để trích xuất. Thiếu " + (requestedVolume - availableVolume) + " ml.")
+                                .message("Không đủ máu để trích xuất. Thiếu" + (requestedVolume - availableVolume) + " ml.")
                                 .build()
                 );
             }
@@ -78,12 +88,15 @@ public class ExtractionService implements IExtractionService {
 
                 inventoryRepository.save(inventory);
 
-                ExtractionDetail detail = ExtractionDetail.builder()
-                        .extraction(extraction)
-                        .inventory(inventory)
-                        .volumeExtracted(extractVolume)
-                        .build();
-                detailList.add(detail);
+                if (extractVolume > 0) {
+                    ExtractionDetail detail = ExtractionDetail.builder()
+                            .extraction(extraction)
+                            .inventory(inventory)
+                            .volumeExtracted(extractVolume)
+                            .build();
+                    detailList.add(detail);
+                }
+
 
                 remaining -= extractVolume;
             }
@@ -93,7 +106,7 @@ public class ExtractionService implements IExtractionService {
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.CREATED)
-                            .message("Extraction created successfully")
+                            .message("Tạo thành công trích xuất")
                             .data(Map.of("extractionId", extraction.getExtractionId()))
                             .build()
             );
@@ -111,38 +124,44 @@ public class ExtractionService implements IExtractionService {
         return extractionRepository.findById(id).map(extraction ->
                 ResponseEntity.ok(ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Extraction retrieved")
+                        .message("Truy xuất trích xuất thành công")
                         .data(mapToResponse(extraction))
                         .build())
         ).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Not found").build()
+                ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy trích xuất").build()
         ));
     }
 
     @Override
     public ResponseEntity<?> getAllExtractions(Integer bloodTypeId, Integer bloodComponentId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Extraction> pageResult;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
 
-        if (bloodTypeId != null && bloodComponentId != null) {
-            pageResult = extractionRepository.findByBloodType_BloodTypeIdAndBloodComponent_ComponentId(bloodTypeId, bloodComponentId, pageable);
-        } else if (bloodTypeId != null) {
-            pageResult = extractionRepository.findByBloodType_BloodTypeId(bloodTypeId, pageable);
-        } else if (bloodComponentId != null) {
-            pageResult = extractionRepository.findByBloodComponent_ComponentId(bloodComponentId, pageable);
-        } else {
-            pageResult = extractionRepository.findAll(pageable);
+        Specification<Extraction> spec = (root, query, builder) -> null;
+        if (bloodTypeId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("bloodType").get("bloodTypeId"), bloodTypeId));
+        }
+        if (bloodComponentId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("bloodComponent").get("componentId"), bloodComponentId));
         }
 
-        List<ExtractionResponse> list = pageResult.getContent().stream().map(this::mapToResponse).collect(Collectors.toList());
+        Page<Extraction> pageResult = extractionRepository.findAll(spec, pageable);
+        List<ExtractionResponse> list = pageResult.getContent().stream().map(this::mapToResponse).toList();
+
         Map<String, Object> response = new HashMap<>();
         response.put("content", list);
         response.put("totalItems", pageResult.getTotalElements());
         response.put("totalPages", pageResult.getTotalPages());
         response.put("currentPage", page);
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("List extractions").data(response).build());
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Truy xuất các trích xuất thành công")
+                .data(response)
+                .build());
     }
+
 
     @Override
     public ResponseEntity<?> getExtractionDetailsByExtractionId(Integer extractionId) {
@@ -155,7 +174,7 @@ public class ExtractionService implements IExtractionService {
                         .build()
         ).collect(Collectors.toList());
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Extraction details").data(response).build());
+        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Chi tiết trích xuất").data(response).build());
     }
 
     @Override
@@ -168,7 +187,7 @@ public class ExtractionService implements IExtractionService {
         extractionDetailRepository.deleteByExtraction_ExtractionId(id);
         extractionRepository.deleteById(id);
 
-        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Deleted successfully").build());
+        return ResponseEntity.ok(ResponseObject.builder().status(HttpStatus.OK).message("Đã xóa trích xuất thành công").build());
     }
 
     @Transactional
@@ -177,7 +196,7 @@ public class ExtractionService implements IExtractionService {
         Optional<Extraction> opt = extractionRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Extraction not found").build()
+                    ResponseObject.builder().status(HttpStatus.NOT_FOUND).message("Không tìm thấy trích xuất").build()
             );
         }
 
@@ -189,7 +208,7 @@ public class ExtractionService implements IExtractionService {
 
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Extraction updated successfully")
+                .message("Đã cập nhật trích xuất thành công")
                 .data(Map.of("extractionId", extraction.getExtractionId()))
                 .build());
     }

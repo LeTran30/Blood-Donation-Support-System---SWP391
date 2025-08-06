@@ -4,10 +4,8 @@ import com.example.blooddonationsupportsystem.dtos.request.appointment.Appointme
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.dtos.responses.appointment.AppointmentResponse;
 import com.example.blooddonationsupportsystem.models.Appointment;
-import com.example.blooddonationsupportsystem.models.HealthDeclaration;
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.AppointmentRepository;
-import com.example.blooddonationsupportsystem.repositories.HealthDeclarationRepository;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.reminder.IReminderService;
 import com.example.blooddonationsupportsystem.utils.AppointmentStatus;
@@ -31,7 +29,6 @@ import java.util.*;
 public class AppointmentService implements IAppointmentService{
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
-    private final HealthDeclarationRepository healthDeclarationRepository;
     private final IReminderService reminderService;
     private final ModelMapper modelMapper;
 
@@ -42,7 +39,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
+                            .message("Không tìm thấy người dùng")
                             .build()
             );
         }
@@ -55,27 +52,10 @@ public class AppointmentService implements IAppointmentService{
 
         Appointment saved = appointmentRepository.save(appointment);
         
-        // Create health declaration
-        HealthDeclaration healthDeclaration = HealthDeclaration.builder()
-                .appointment(saved)
-                .hasBloodTransmittedDisease(appointmentRequest.getHealthDeclaration().getHasBloodTransmittedDisease())
-                .hasChronicDisease(appointmentRequest.getHealthDeclaration().getHasChronicDisease())
-                .currentMedications(appointmentRequest.getHealthDeclaration().getCurrentMedications())
-                .hasTattooAcupuncture(appointmentRequest.getHealthDeclaration().getHasTattooAcupuncture())
-                .hasRecentVaccine(appointmentRequest.getHealthDeclaration().getHasRecentVaccine())
-                .hasTravelAbroad(appointmentRequest.getHealthDeclaration().getHasTravelAbroad())
-                .hasUnsafeSex(appointmentRequest.getHealthDeclaration().getHasUnsafeSex())
-                .isFirstBlood(appointmentRequest.getHealthDeclaration().getIsFirstBlood())
-                .isPregnantOrBreastfeeding(appointmentRequest.getHealthDeclaration().getIsPregnantOrBreastfeeding())
-                .isMenstruating(appointmentRequest.getHealthDeclaration().getIsMenstruating())
-                .build();
-        
-        healthDeclarationRepository.save(healthDeclaration);
-        
         return  ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.CREATED)
-                        .message("Successfully created appointment with health declaration")
+                        .message("Đặt cuộc hiện thành công")
                         .data(mapWithUserId(saved))
                         .build()
         );
@@ -87,13 +67,13 @@ public class AppointmentService implements IAppointmentService{
         return appointment.map(value -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully retrieved appointment")
+                        .message("Truy xuất cuộc hẹn thành công")
                         .data(mapWithUserId(value))
                         .build()
         )).orElseGet(() -> ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.NOT_FOUND)
-                        .message("Appointment not found")
+                        .message("Không tìm thấy cuộc hẹn")
                         .build()
         ));
     }
@@ -103,7 +83,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("User not found")
+                            .message("Không tìm thấy người dùng")
                             .build()
             );
         }
@@ -114,7 +94,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully retrieved appointments")
+                        .message("Truy xuất ca cuộc hẹn thành công")
                         .data(appointments.map(this::mapWithUserId)) // map trả về dạng Page
                         .build()
         );
@@ -128,7 +108,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Appointment not found")
+                            .message("Không tìm thấy cuộc hẹn")
                             .build()
             );
         }
@@ -136,7 +116,7 @@ public class AppointmentService implements IAppointmentService{
         Appointment appointment = optionalAppointment.get();
 
         try {
-            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            if (appointment.getStatus() == AppointmentStatus.MEDICAL_COMPLETED) {
                 LocalDate completedDate = appointment.getAppointmentDate().toLocalDate();
                 reminderService.createNextDonationReminder(appointment.getUser().getId(), completedDate);
             }
@@ -145,7 +125,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.BAD_REQUEST)
-                            .message("Invalid status value")
+                            .message("Giá trị trạng thái không hợp lệ")
                             .build()
             );
         }
@@ -154,7 +134,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully updated appointment")
+                        .message("Cập nhật cuộc hẹn thành công")
                         .data(mapWithUserId(saved))
                         .build()
         );
@@ -168,7 +148,7 @@ public class AppointmentService implements IAppointmentService{
             return ResponseEntity.ok(
                     ResponseObject.builder()
                             .status(HttpStatus.NOT_FOUND)
-                            .message("Appointment not found")
+                            .message("Không tìm thấy cuộc hẹn")
                             .build()
             );
         }
@@ -178,7 +158,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Successfully cancelled appointment")
+                        .message("Hủy cuộc hẹn thành công")
                         .data(mapWithUserId(appointment))
                         .build()
         );
@@ -226,7 +206,7 @@ public class AppointmentService implements IAppointmentService{
         return ResponseEntity.ok(
                 ResponseObject.builder()
                         .status(HttpStatus.OK)
-                        .message("Appointments retrieved successfully")
+                        .message("Truy xuất các cuộc hẹn thành công")
                         .data(data)
                         .build()
         );

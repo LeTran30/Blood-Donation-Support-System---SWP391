@@ -3,6 +3,7 @@ package com.example.blooddonationsupportsystem.controller;
 import com.example.blooddonationsupportsystem.dtos.request.extraction.ExtractionRequest;
 import com.example.blooddonationsupportsystem.dtos.responses.ResponseObject;
 import com.example.blooddonationsupportsystem.service.extraction.IExtractionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class ExtractionController {
     @PostMapping
     @PreAuthorize("true")
     public ResponseEntity<?> createExtraction(
-            @RequestBody ExtractionRequest request,
+            @Valid @RequestBody ExtractionRequest request,
             BindingResult result
     ) {
         if (result.hasErrors()) {
@@ -51,13 +52,14 @@ public class ExtractionController {
     @GetMapping
     @PreAuthorize("true")
     public ResponseEntity<?> getAllExtractions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Integer bloodTypeId,
-            @RequestParam(required = false) Integer bloodComponentId
+            @RequestParam(required = false) Integer bloodComponentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return extractionService.getAllExtractions(page, size, bloodTypeId, bloodComponentId);
+        return extractionService.getAllExtractions(bloodTypeId, bloodComponentId, page, size);
     }
+
 
     @GetMapping("/{extractionId}/details")
     @PreAuthorize("true")

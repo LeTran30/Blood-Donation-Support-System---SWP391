@@ -12,13 +12,13 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class Authentication {
-    @Email(message = "email invalid format")
-    @NotBlank(message = "Email is required")
+    @Email(message = "Email sai format")
+    @NotBlank(message = "Cần cung cấp email")
     @Schema(description = "Email address", example = "user@example.com")
     private String email;
 
-    @NotBlank(message = "password must have 8 character")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @NotBlank(message = "Cần cung cấp mật khẩu")
+    @Size(min = 8, message = "Mật khẩu tối thiểu 8 ký tự")
     @Schema(description = "Password, minimum 8 characters", example = "Password123!")
     private String password;
 }

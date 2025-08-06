@@ -9,10 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HealthDeclarationRequest {
-
-    @NotNull
-    private Integer appointmentId;
+public class HealthDeclarationUpdateRequest {
 
     @NotNull(message = "Cần cung cấp thông tin về bệnh lây truyền qua máu")
     @Schema(description = "Whether the donor has a blood transmitted disease", example = "false")
@@ -22,6 +19,7 @@ public class HealthDeclarationRequest {
     @Schema(description = "Whether the donor has a chronic disease", example = "false")
     private Boolean hasChronicDisease;
 
+    @NotNull(message = "Cần cung cấp thông tin về các loại thuốc đang sử dụng")
     @Schema(description = "Current medications the donor is taking", example = "None")
     private String currentMedications;
 

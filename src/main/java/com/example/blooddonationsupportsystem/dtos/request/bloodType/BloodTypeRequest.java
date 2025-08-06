@@ -14,5 +14,7 @@ import java.util.Set;
 public class BloodTypeRequest {
     @NotEmpty
     private String typeName;
+    private String canDonateTo;
+    private String canReceiveFrom;
     private Set<Integer> componentIds; // List of IDs of BloodComponent
 }

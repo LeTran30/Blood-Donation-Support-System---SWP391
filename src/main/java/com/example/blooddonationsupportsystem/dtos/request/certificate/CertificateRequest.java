@@ -12,12 +12,12 @@ import lombok.*;
 @Builder
 public class CertificateRequest {
 
-    @NotNull(message = "User ID must not be null")
+    @NotNull(message = "ID người dùng không được để trống")
     private Integer userId;
 
-    @NotNull(message = "Certificate type must not be null")
+    @NotNull(message = "Loại chứng chỉ không được để trống")
     private CertificateType certificateType;
 
-    @NotBlank(message = "Description must not be blank")
+    @NotBlank(message = "Mô tả không được để trống")
     private String description;
 }

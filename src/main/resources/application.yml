@@ -31,9 +31,9 @@ spring:
     #     url: jdbc:mysql://localhost:3306/BloodDonationSupportSystem
     #     username: root
     #     password: 12345
-    url: ${DB_URL:jdbc:mysql://hopper.proxy.rlwy.net:20492/BloodDonationSupportSystem}
+    url: ${DB_URL:jdbc:mysql://gondola.proxy.rlwy.net:47875/BloodDonationSupportSystem}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:ouZMiVTcQFeORQEEGyjaCpUQnMEvqkvu}
+    password: ${DB_PASSWORD:YDKKqfDgUkoeGnXkmJCzDtpXXxIQnJzq}
 
   jpa:
     show-sql: false

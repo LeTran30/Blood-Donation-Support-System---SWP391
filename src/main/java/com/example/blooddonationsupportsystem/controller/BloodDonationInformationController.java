@@ -6,6 +6,7 @@ import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.bloodDonationInformation.IBloodDonationInformationService;
 import com.example.blooddonationsupportsystem.utils.Role;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class BloodDonationInformationController {
     @PostMapping
     @PreAuthorize("hasAuthority('staff:create')")
     public ResponseEntity<?> createBloodDonationInfor(
-            @RequestBody BloodDonationInformationRequest request,
+            @Valid @RequestBody BloodDonationInformationRequest request,
             BindingResult result
     ) {
         if (result.hasErrors()) {
@@ -69,7 +70,7 @@ public class BloodDonationInformationController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (userId == null || currentUser.getRole() == Role.MEMBER) {
-            return bloodDonationInforService.getBloodDonationInformationsByUserId(currentUser.getId(), page, size);
+            return bloodDonationInforService.getBloodDonationInformationByUserId(currentUser.getId(), page, size);
         }
 
         if (currentUser.getRole() == Role.STAFF) {
@@ -81,7 +82,7 @@ public class BloodDonationInformationController {
                                 .message("User with id " + userId + " not found")
                                 .build());
             }
-            return bloodDonationInforService.getBloodDonationInformationsByUserId(userId, page, size);
+            return bloodDonationInforService.getBloodDonationInformationByUserId(userId, page, size);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
@@ -130,11 +131,11 @@ public class BloodDonationInformationController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('staff:read')")
-    public ResponseEntity<?> getAllBloodDonationInformations(
+    public ResponseEntity<?> getAllBloodDonationInformation(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return bloodDonationInforService.getAllBloodDonationInformations(page, size);
+        return bloodDonationInforService.getAllBloodDonationInformation(page, size);
     }
 
 }

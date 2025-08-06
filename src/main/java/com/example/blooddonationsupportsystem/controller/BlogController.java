@@ -4,6 +4,7 @@ import com.example.blooddonationsupportsystem.dtos.request.blog.UpdateBlogReques
 import com.example.blooddonationsupportsystem.models.User;
 import com.example.blooddonationsupportsystem.repositories.UserRepository;
 import com.example.blooddonationsupportsystem.service.blog.IBlogService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.security.Principal;
@@ -26,8 +27,8 @@ public class BlogController {
     @PreAuthorize("true")
     @PostMapping
     public ResponseEntity<?> createBlog(
-        @RequestBody CreateBlogRequest request,
-        Principal principal
+            @Valid @RequestBody CreateBlogRequest request,
+            Principal principal
     ) {
         String email = principal.getName();
         User user = userRepository.findByEmail(email)

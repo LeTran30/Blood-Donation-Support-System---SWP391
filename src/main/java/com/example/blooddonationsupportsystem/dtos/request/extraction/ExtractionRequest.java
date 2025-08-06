@@ -1,6 +1,6 @@
 package com.example.blooddonationsupportsystem.dtos.request.extraction;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -13,17 +13,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ExtractionRequest {
-    
-    private Integer inventoryId; // Can be null
-    
-    @NotNull(message = "Blood type ID is required")
+
+    @NotNull(message = "ID nhóm máu không được để trống")
     private Integer bloodTypeId;
     
-    @NotNull(message = "Blood component ID is required")
+    @NotNull(message = "ID thành phần máu không được để trống")
     private Integer bloodComponentId;
     
-    @NotNull(message = "Volume extracted is required")
-    @Min(value = 1, message = "Volume extracted must be greater than 0")
+    @NotNull(message = "Thể tích máu trích xuất không được để trống")
+    @Positive(message = "Thể tích máu trích xuất là một số nguyên dương")
     private Integer totalVolumeExtraction;
 
     private String notes;

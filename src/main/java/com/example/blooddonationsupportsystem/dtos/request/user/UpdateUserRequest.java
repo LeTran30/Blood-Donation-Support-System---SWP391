@@ -16,10 +16,10 @@ import java.time.LocalDate;
 @Builder
 public class UpdateUserRequest {
 
-    @NotBlank(message = "Full name is required")
+    @NotBlank(message = "Cần cung cấp họ và tên")
     private String fullName;
 
-    @Email(message = "Invalid email format")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
     private String phoneNumber;

@@ -30,7 +30,7 @@ public class BloodDonationService implements IBloodDonationService {
     @Override
     public BloodDonationResponse getBloodDonationById(int id) {
         BloodDonation donation = bloodDonationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Blood donation not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cuộc hiến máu"));
         return BloodDonationResponse.builder()
                 .donationId(donation.getDonationId())
                 .user(donation.getUser().getId())
@@ -49,7 +49,7 @@ public class BloodDonationService implements IBloodDonationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName(); // nếu bạn dùng email làm username trong UserDetails
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy người dùng"));
         Integer currentUserId = user.getId();
         // Lấy danh sách quyền (roles)
         boolean isAdminOrStaff = authentication.getAuthorities().stream()
@@ -83,16 +83,16 @@ public class BloodDonationService implements IBloodDonationService {
     @Override
     public BloodDonation addBloodDonation(BloodDonationRequest bloodDonationRequest) {
         User user = userRepository.findById(bloodDonationRequest.getUser())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng"));
 
         BloodType bloodType = bloodTypeRepository.findById(bloodDonationRequest.getBloodType())
-                .orElseThrow(() -> new IllegalArgumentException("Blood type not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm máu"));
 
         BloodComponent bloodComponent = bloodComponentRepository.findById(bloodDonationRequest.getBloodComponent())
-                .orElseThrow(() -> new IllegalArgumentException("Blood component not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành phần máu"));
 
         HealthCheck healthCheck = healthCheckRepository.findById(bloodDonationRequest.getHealthCheck())
-                .orElseThrow(() -> new IllegalArgumentException("Health check not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông kiểm tra sức khỏa"));
 
         BloodDonation bloodDonation = BloodDonation.builder()
                 .user(user)
@@ -110,7 +110,7 @@ public class BloodDonationService implements IBloodDonationService {
     @Override
     public BloodDonation updateDonationStatus(int donationId, DonationStatus newStatus) {
         BloodDonation donation = bloodDonationRepository.findById(donationId)
-                .orElseThrow(() -> new IllegalArgumentException("Blood donation not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cuộc hiến máu"));
 
         donation.setStatus(newStatus);
         return bloodDonationRepository.save(donation);

@@ -15,14 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class AppointmentRequest {
 
-    @NotNull(message = "Appointment date is required")
+    @NotNull(message = "Cần cung cấp ngày hẹn")
     @Schema(description = "Appointment date and time",
             example = "2025-06-05T18:00:00")
     private LocalDateTime appointmentDate;
-
-    @NotNull(message = "Health declaration is required")
-    @Valid
-    @Schema(description = "Health declaration information")
-    private HealthDeclarationRequest healthDeclaration;
-
 }

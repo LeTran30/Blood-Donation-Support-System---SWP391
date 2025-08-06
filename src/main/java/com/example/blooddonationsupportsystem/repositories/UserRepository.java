@@ -1,6 +1,7 @@
 package com.example.blooddonationsupportsystem.repositories;
 
 import com.example.blooddonationsupportsystem.models.User;
+import com.example.blooddonationsupportsystem.utils.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
@@ -31,4 +32,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.bloodType.bloodTypeId = :bloodTypeId")
     List<User> findAllByBloodTypeId(@Param("bloodTypeId") Integer bloodTypeId);
+
+    List<User> findAllByRoleAndBloodType_BloodTypeId(Role role, Integer bloodType_bloodTypeId);
 }

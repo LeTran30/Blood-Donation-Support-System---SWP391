@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('admin:read', 'staff:read')")
+    @PreAuthorize("hasAnyAuthority('admin:read', 'staff:read', 'member:read')")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return userService.getUserById(id);
     }
